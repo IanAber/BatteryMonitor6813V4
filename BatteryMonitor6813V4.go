@@ -36,87 +36,87 @@ import (
 	"time"
 )
 
-const SPI_BAUD_RATE = physic.MegaHertz * 1
-const SPI_BITS_PER_WORD = 8
+const SPIBAUDRATE = physic.MegaHertz * 1
+const SPIBITSPERWORD = 8
 
 type InverterValues struct {
-	Volts          float32    `json:"volts"`
-	Amps           float32    `json:"amps"`
-	Soc            float32    `json:"soc"`
-	Vsetpoint      float32    `json:"vsetpoint"`
-	Frequency      float64    `json:"frequency"`
-	IMax           float32    `json:"iMax"`
-	OnRelay1       bool       `json:"relay1"`
-	OnRelay2       bool       `json:"relay2"`
-	OnRelay1Slave1 bool       `json:"relay1slave1"`
-	OnRelay2Slave1 bool       `json:"relay2slave1"`
-	OnRelay1Slave2 bool       `json:"relay1slave2"`
-	OnRelay2Slave2 bool       `json:"relay1slave2"`
-	GnRun          bool       `json:"gnrun"`
-	GnRunSlave1    bool       `json:"gnrunslave1"`
-	GnRunSlave2    bool       `json:"gnrunslave2"`
-	AutoGn         bool       `json:"autogn"`
-	AutoLodExt     bool       `json:"autolodext"`
-	AutoLodSoc     bool       `json:"autolodsoc"`
-	Tm1            bool       `json:"tm1"`
-	Tm2            bool       `json:"tm2"`
-	ExtPwrDer      bool       `json:"extpwrder"`
-	ExtVfOk        bool       `json:"extvfok"`
-	GdOn           bool       `json:"gdon"`
-	Errror         bool       `json:"error"`
-	Run            bool       `json:"run"`
-	BatFan         bool       `json:"batfan"`
-	AcdCir         bool       `json:"acdcir"`
-	MccBatFan      bool       `json:"mccbatfan"`
-	MccAutoLod     bool       `json:"mccautoload"`
-	Chp            bool       `json:"chp"`
-	ChpAdd         bool       `json:"chpadd"`
-	SiComRemote    bool       `json:"sicomremote"`
-	OverLoad       bool       `json:"overload"`
-	ExtSrcConn     bool       `json:"extsrcconn"`
-	Silent         bool       `json:"silent"`
-	Current        bool       `json:"current"`
-	FeedSelfC      bool       `json:"feedselfc"`
-	Esave          bool       `json:"esave"`
-	mu             sync.Mutex `json:"-"`
-	Log            bool       `json:"-"`
+	Volts          float32 `json:"volts"`
+	Amps           float32 `json:"amps"`
+	Soc            float32 `json:"soc"`
+	Vsetpoint      float32 `json:"vsetpoint"`
+	Frequency      float64 `json:"frequency"`
+	IMax           float32 `json:"iMax"`
+	OnRelay1       bool    `json:"relay1"`
+	OnRelay2       bool    `json:"relay2"`
+	OnRelay1Slave1 bool    `json:"relay1slave1"`
+	OnRelay2Slave1 bool    `json:"relay2slave1"`
+	OnRelay1Slave2 bool    `json:"relay1slave2"`
+	OnRelay2Slave2 bool    `json:"relay2slave2"`
+	GnRun          bool    `json:"gnrun"`
+	GnRunSlave1    bool    `json:"gnrunslave1"`
+	GnRunSlave2    bool    `json:"gnrunslave2"`
+	AutoGn         bool    `json:"autogn"`
+	AutoLodExt     bool    `json:"autolodext"`
+	AutoLodSoc     bool    `json:"autolodsoc"`
+	Tm1            bool    `json:"tm1"`
+	Tm2            bool    `json:"tm2"`
+	ExtPwrDer      bool    `json:"extpwrder"`
+	ExtVfOk        bool    `json:"extvfok"`
+	GdOn           bool    `json:"gdon"`
+	Errror         bool    `json:"error"`
+	Run            bool    `json:"run"`
+	BatFan         bool    `json:"batfan"`
+	AcdCir         bool    `json:"acdcir"`
+	MccBatFan      bool    `json:"mccbatfan"`
+	MccAutoLod     bool    `json:"mccautoload"`
+	Chp            bool    `json:"chp"`
+	ChpAdd         bool    `json:"chpadd"`
+	SiComRemote    bool    `json:"sicomremote"`
+	OverLoad       bool    `json:"overload"`
+	ExtSrcConn     bool    `json:"extsrcconn"`
+	Silent         bool    `json:"silent"`
+	Current        bool    `json:"current"`
+	FeedSelfC      bool    `json:"feedselfc"`
+	Esave          bool    `json:"esave"`
+	mu             sync.Mutex
+	Log            bool `json:"-"`
 }
 
 type InverterSetpoints struct {
-	VSetpoint			float32	`json:"v_setpoint"`		// Current Setpoint for the Inverter battery voltage
-	ISetpoint			float32	`json:"i_setpoint"`		// Current Setpoint for the Inverter battery current
-	VDischarge			float32	`json:"v_discharge"`		// Setpoint for minimum discharge voltage
-	IDischarge			float32	`json:"i_discharge"`		// Setpoint for maximum discharge current
-	VTargetSetpoint		float32	`json:"v_target_setpoint"`		// Voltage we should get to
-	ITargetSetpoint		float32	`json:"i_target_setpoint"`		// Current we should get to
-	VChargingSetpoint	float32	`json:"v_charging_setpoint"`		// Voltage for normal charging
-	IChargingSetpoint	float32	`json:"i_charging_setpoint"`		// Current for normal charging
-	VChargedSetpoint	float32	`json:"v_charged_setpoint"`		// Voltage for fully charged
-	IChargedSetpoint	float32	`json:"i_charged_setpoint"`		// Current for fully charged
+	VSetpoint         float32 `json:"v_setpoint"`          // Current Setpoint for the Inverter battery voltage
+	ISetpoint         float32 `json:"i_setpoint"`          // Current Setpoint for the Inverter battery current
+	VDischarge        float32 `json:"v_discharge"`         // Setpoint for minimum discharge voltage
+	IDischarge        float32 `json:"i_discharge"`         // Setpoint for maximum discharge current
+	VTargetSetpoint   float32 `json:"v_target_setpoint"`   // Voltage we should get to
+	ITargetSetpoint   float32 `json:"i_target_setpoint"`   // Current we should get to
+	VChargingSetpoint float32 `json:"v_charging_setpoint"` // Voltage for normal charging
+	IChargingSetpoint float32 `json:"i_charging_setpoint"` // Current for normal charging
+	VChargedSetpoint  float32 `json:"v_charged_setpoint"`  // Voltage for fully charged
+	IChargedSetpoint  float32 `json:"i_charged_setpoint"`  // Current for fully charged
 }
 
 var (
-	ltc					*LTC6813.LTC6813
-	fuelgauge			*FuelGauge.FuelGauge
-	spiConnection		spi.Conn
-	verbose				*bool
-	spiDevice			*string
-	nErrors				int
-	pDB					*sql.DB
-	pDatabaseLogin		*string
-	pDatabasePassword	*string
-	pDatabaseServer		*string
-	pDatabasePort		*string
-	pDatabaseName		*string
-	ltc_lock			sync.Mutex
-	nDevices			int
-	voltageStatement	*sql.Stmt
-	temperatureStatement	*sql.Stmt
-	evaluator			*FullChargeEvaluator.FullChargeEval
-	iValues				InverterValues
-	autoFan				bool
-	signal 				*sync.Cond
-	setpoints			InverterSetpoints
+	ltc                  *LTC6813.LTC6813
+	fuelgauge            *FuelGauge.FuelGauge
+	spiConnection        spi.Conn
+	verbose              *bool
+	spiDevice            *string
+	nErrors              int
+	pDB                  *sql.DB
+	pDatabaseLogin       *string
+	pDatabasePassword    *string
+	pDatabaseServer      *string
+	pDatabasePort        *string
+	pDatabaseName        *string
+	ltcLock              sync.Mutex
+	nDevices             int
+	voltageStatement     *sql.Stmt
+	temperatureStatement *sql.Stmt
+	evaluator            *FullChargeEvaluator.FullChargeEval
+	iValues              InverterValues
+	autoFan              bool
+	signal               *sync.Cond
+	setpoints            InverterSetpoints
 )
 
 var upgrader = websocket.Upgrader{
@@ -185,10 +185,10 @@ func webOptionsHandler(w http.ResponseWriter, _ *http.Request) {
 
 /**
 Set up the LTC6813 chain.
- */
+*/
 func getLTC6813(devices int) (int, error) {
-	ltc_lock.Lock()
-	defer ltc_lock.Unlock()
+	ltcLock.Lock()
+	defer ltcLock.Unlock()
 	ltc = LTC6813.New(spiConnection, devices)
 	if err := ltc.Initialise(); err != nil {
 		//		fmt.Print(err)
@@ -207,7 +207,7 @@ func getLTC6813(devices int) (int, error) {
 
 /**
 Get the voltage and temperature measurements from the LTC6813 chain
- */
+*/
 func performMeasurements() {
 	var err error
 	if nDevices == 0 {
@@ -223,7 +223,7 @@ func performMeasurements() {
 	}
 	if nDevices == 0 {
 		if *verbose {
-			fmt.Println("\033cNo devices found on %s - %s", *spiDevice, time.Now().Format("15:04:05.99"))
+			fmt.Printf("\033cNo devices found on %s - %s\n", *spiDevice, time.Now().Format("15:04:05.99"))
 		}
 		log.Printf("\033cNo devices found on %s - %s", *spiDevice, time.Now().Format("15:04:05.99"))
 		return
@@ -259,13 +259,13 @@ func performMeasurements() {
 		nDevices = 0
 		nErrors++
 	}
-//	}
+	//	}
 	signal.Broadcast() // Tell the world we have data now
 }
 
 /**
 Log the LTC6813 data to the database
- */
+*/
 func logData() {
 	_, err := voltageStatement.Exec(ltc.GetRawVolts(0, 0), ltc.GetRawVolts(0, 1), ltc.GetRawVolts(0, 2), ltc.GetRawVolts(0, 3), ltc.GetRawVolts(0, 4), ltc.GetRawVolts(0, 5),
 		ltc.GetRawVolts(0, 6), ltc.GetRawVolts(0, 7), ltc.GetRawVolts(0, 8), ltc.GetRawVolts(0, 9), ltc.GetRawVolts(0, 10), ltc.GetRawVolts(0, 11),
@@ -281,8 +281,8 @@ func logData() {
 		ltc.GetRawVolts(4, 6), ltc.GetRawVolts(4, 7), ltc.GetRawVolts(4, 8), ltc.GetRawVolts(4, 9), ltc.GetRawVolts(4, 10), ltc.GetRawVolts(4, 11),
 		ltc.GetRawVolts(4, 12), ltc.GetRawVolts(4, 13), ltc.GetRawVolts(4, 14), ltc.GetRawVolts(4, 15), ltc.GetRawVolts(4, 16), ltc.GetRawVolts(4, 17),
 		ltc.GetRawVolts(5, 0), ltc.GetRawVolts(5, 1),
-		uint16(((ltc.GetSumOfCellsVolts(0))+(ltc.GetSumOfCellsVolts(1))+(ltc.GetVolts(2, 0))+(ltc.GetVolts(2, 1))) * 10),
-		uint16(((ltc.GetSumOfCellsVolts(3))+(ltc.GetSumOfCellsVolts(4))+(ltc.GetVolts(5, 0))+(ltc.GetVolts(5, 1))) * 10))
+		uint16(((ltc.GetSumOfCellsVolts(0))+(ltc.GetSumOfCellsVolts(1))+(ltc.GetVolts(2, 0))+(ltc.GetVolts(2, 1)))*10),
+		uint16(((ltc.GetSumOfCellsVolts(3))+(ltc.GetSumOfCellsVolts(4))+(ltc.GetVolts(5, 0))+(ltc.GetVolts(5, 1)))*10))
 	if err != nil {
 		log.Println(err)
 		return
@@ -311,7 +311,7 @@ func logData() {
 
 /**
 Start the Web Socket server. This sends out data to all subscribers on a regular schedule so subscribers don't need to poll for updates.
- */
+*/
 func startDataWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
@@ -330,8 +330,8 @@ func startDataWebSocket(w http.ResponseWriter, r *http.Request) {
 			log.Println("Failed to get the values websocket writer - ", err)
 			return
 		}
-		var sJSON string = `{"battery":` + string(ltc.GetValuesAsJSON()) + `,"inverter":`
-		jInverter, err := json.Marshal(iValues)
+		var sJSON = `{"battery":` + string(ltc.GetValuesAsJSON()) + `,"inverter":`
+		jInverter, err := json.Marshal(&iValues)
 		sJSON += string(jInverter)
 		sJSON += `,"fuelgauge":`
 		sFuelgauge, err := fuelgauge.GetData()
@@ -353,7 +353,7 @@ func startDataWebSocket(w http.ResponseWriter, r *http.Request) {
 
 /**
 Home page
- */
+*/
 func socketHome(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -361,34 +361,37 @@ func socketHome(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	fmt.Fprint(w, homeHTML)
+	_, err := fmt.Fprint(w, homeHTML)
+	if err != nil {
+		log.Print("socketHome - ", err)
+	}
 }
 
 /**
 Handle a CAN frome from the inverter
- */
+*/
 func handleCANFrame(frm can.Frame) {
 	if *verbose {
 		fmt.Println("Can frame received - ", frm.ID)
 	}
 	switch frm.ID {
 	case 0x305: // Battery voltage, current and state of charge
-		c305 := CAN_305.New([]byte(frm.Data[0:]))
+		c305 := CAN_305.New(frm.Data[0:])
 
 		iValues.Volts = c305.VBatt()
 		iValues.Amps = c305.IBatt()
 		iValues.Soc = c305.SocBatt()
 
 	case 0x306: // Charge procedure, Operating state, Active error, Charge set point
-		c306 := CAN_306.New([]byte(frm.Data[0:]))
+		c306 := CAN_306.New(frm.Data[0:])
 		iValues.Vsetpoint = c306.ChargeSetPoint()
 
 	case 0x010: // Frequency
-		c010 := CAN_010.New([]byte(frm.Data[0:]))
+		c010 := CAN_010.New(frm.Data[0:])
 		iValues.Frequency = c010.Frequency()
 
 	case 0x307: // Relays and status
-		c307 := CAN_307.New([]byte(frm.Data[0:]))
+		c307 := CAN_307.New(frm.Data[0:])
 		iValues.GnRun = c307.GnRun()
 		iValues.OnRelay1 = c307.Relay1_Master()
 		iValues.OnRelay2 = c307.Relay2_Master()
@@ -440,7 +443,6 @@ func webWaterBank(w http.ResponseWriter, r *http.Request) {
 	fuelgauge.WebWaterBank(w, r)
 }
 
-
 func webSwitchOffBank(w http.ResponseWriter, r *http.Request) {
 	setHeaders(w)
 	vars := mux.Vars(r)
@@ -451,7 +453,6 @@ func webSwitchOffBank(w http.ResponseWriter, r *http.Request) {
 	}
 	fuelgauge.SwitchOffBank(int(bank))
 }
-
 
 func webBatteryFan(w http.ResponseWriter, r *http.Request) {
 	setHeaders(w)
@@ -468,27 +469,36 @@ func webGetFuelGaugeValues(w http.ResponseWriter, r *http.Request) {
 	fuelgauge.WebGetValues(w, r)
 }
 
-func webGetSerialNumbers(w http.ResponseWriter, r *http.Request) {
+func webGetSerialNumbers(w http.ResponseWriter, _ *http.Request) {
 
 	var serialNumbers struct {
-		CellNumber int				`json:"cell_number"`
-		SerialNumber string			`json:"serial_number"`
-		InstallDate string			`json:"install_date"`
-		FullChargeDetected string	`json:"full_charge_detected"`
-		FullCharge int				`json:"full_charge"`
+		CellNumber         int    `json:"cell_number"`
+		SerialNumber       string `json:"serial_number"`
+		InstallDate        string `json:"install_date"`
+		FullChargeDetected string `json:"full_charge_detected"`
+		FullCharge         int    `json:"full_charge"`
 	}
 	rowNum := 1
 	setHeaders(w)
 
-	rows, err := pDB.Query( `select cell_number as cell_number, serial_number as serial_number, date_format(install_date, "%D %M %Y") as install_date, date_format(full_charge_detected, "%D %M %Y %H:%i:%s") as full_charge_detected, full_charge as full_charge from serial_numbers`)
+	rows, err := pDB.Query(`select cell_number as cell_number, serial_number as serial_number, date_format(install_date, "%D %M %Y") as install_date, date_format(full_charge_detected, "%D %M %Y %H:%i:%s") as full_charge_detected, full_charge as full_charge from serial_numbers`)
 	if err != nil {
-		fmt.Fprint(w, `{"error":"`, err, `"}`)
+		_, err2 := fmt.Fprint(w, `{"error":"`, err, `"}`)
 		log.Println("Error getting serial numbers - ", err)
+		if err2 != nil {
+			log.Print("webGetSerialNumbers - ", err2)
+		}
 	} else {
-		fmt.Fprint(w, `{`)
+		_, eFmt := fmt.Fprint(w, `{`)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 		for rows.Next() {
 			if rowNum > 1 {
-				fmt.Fprint(w, ",")
+				_, eFmt := fmt.Fprint(w, ",")
+				if eFmt != nil {
+					log.Println(eFmt)
+				}
 			}
 			if rowNum == 39 {
 				rowNum = 101
@@ -501,37 +511,52 @@ func webGetSerialNumbers(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					log.Println("Failed to convert serial numbers to JSON - ", err)
 				} else {
-					fmt.Fprint(w, `"`, rowNum, `":`, string(jsonString))
+					_, eFmt := fmt.Fprint(w, `"`, rowNum, `":`, string(jsonString))
+					if eFmt != nil {
+						log.Println(eFmt)
+					}
 				}
 			}
 			rowNum++
 		}
-		fmt.Fprint(w, `}`)
+		_, eFmt = fmt.Fprint(w, `}`)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	}
 }
 
 func webGetLastFullChargeTimes(w http.ResponseWriter, _ *http.Request) {
 	setHeaders(w)
-	fmt.Fprint(w, fuelgauge.GetLastFullChargeTimes())
+	_, eFmt := fmt.Fprint(w, fuelgauge.GetLastFullChargeTimes())
+	if eFmt != nil {
+		log.Println(eFmt)
+	}
 }
 
 func webGetBatterySettings(w http.ResponseWriter, _ *http.Request) {
 	setHeaders(w)
-	fmt.Fprint(w, fuelgauge.GetCapacity())
+	_, eFmt := fmt.Fprint(w, fuelgauge.GetCapacity())
+	if eFmt != nil {
+		log.Println(eFmt)
+	}
 }
 
 func returnWebError(w http.ResponseWriter, err error) {
-	fmt.Fprint(w, `{"error":"`, err.Error(), `"}`)
+	_, eFmt := fmt.Fprint(w, `{"error":"`, err.Error(), `"}`)
+	if eFmt != nil {
+		log.Println(eFmt)
+	}
 }
 
 func webGetStatus(w http.ResponseWriter, _ *http.Request) {
 	type current struct {
-		Current	float64		`json:"current"`
-		Left float64		`json:"left"`
-		Right float64		`json:"right"`
-		SOC	float64			`json:"soc"`
-		SOCLeft float64		`json:"soc_left"`
-		SOCRight float64	`json:"soc_right"`
+		Current  float64 `json:"current"`
+		Left     float64 `json:"left"`
+		Right    float64 `json:"right"`
+		SOC      float64 `json:"soc"`
+		SOCLeft  float64 `json:"soc_left"`
+		SOCRight float64 `json:"soc_right"`
 	}
 	var currentVal current
 
@@ -551,33 +576,39 @@ func webGetStatus(w http.ResponseWriter, _ *http.Request) {
 	total, left, right := fuelgauge.Capacity()
 	row := pDB.QueryRow(sSQL)
 	err := row.Scan(&currentVal.Current, &currentVal.Left, &currentVal.Right, &currentVal.SOC, &currentVal.SOCLeft, &currentVal.SOCRight)
-	if  err != nil {
-		fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
+	if err != nil {
+		_, eFmt := fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	} else {
 		// Round everything to 1 decimal place and calculate SOC as percentages
-		currentVal.Current = math.Round(currentVal.Current * 10) / 10
-		currentVal.Left = math.Round(currentVal.Left * 10) / 10
-		currentVal.Right = math.Round(currentVal.Right * 10) / 10
-		currentVal.SOC = math.Round((currentVal.SOC / float64(total)) * 1000) / 10
-		currentVal.SOCLeft = math.Round((currentVal.SOCLeft / float64(left)) * 1000) / 10
-		currentVal.SOCRight = math.Round((currentVal.SOCRight / float64(right)) * 1000 ) / 10
+		currentVal.Current = math.Round(currentVal.Current*10) / 10
+		currentVal.Left = math.Round(currentVal.Left*10) / 10
+		currentVal.Right = math.Round(currentVal.Right*10) / 10
+		currentVal.SOC = math.Round((currentVal.SOC/float64(total))*1000) / 10
+		currentVal.SOCLeft = math.Round((currentVal.SOCLeft/float64(left))*1000) / 10
+		currentVal.SOCRight = math.Round((currentVal.SOCRight/float64(right))*1000) / 10
 
 		sJSON, err := json.Marshal(currentVal)
 		if err != nil {
 			returnWebError(w, err)
 			return
 		}
-		fmt.Fprint(w, string(sJSON))
+		_, eFmt := fmt.Fprint(w, string(sJSON))
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	}
 }
 
 func webGetCurrentData(w http.ResponseWriter, r *http.Request) {
 	type current struct {
-		Logged float64		`json:"logged"`
-		Left float64		`json:"left"`
-		Right float64		`json:"right"`
-		SOCLeft float64		`json:"soc_left"`
-		SOCRight float64	`json:"soc_right"`
+		Logged   float64 `json:"logged"`
+		Left     float64 `json:"left"`
+		Right    float64 `json:"right"`
+		SOCLeft  float64 `json:"soc_left"`
+		SOCRight float64 `json:"soc_right"`
 	}
 	var currentVal current
 	var currentData []current = nil
@@ -595,7 +626,10 @@ func webGetCurrentData(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := pDB.Query(sSQL)
 	if err != nil {
-		fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
+		_, eFmt := fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	} else {
 		for rows.Next() {
 			err = rows.Scan(&currentVal.Logged, &currentVal.Left, &currentVal.Right, &currentVal.SOCLeft, &currentVal.SOCRight)
@@ -610,15 +644,18 @@ func webGetCurrentData(w http.ResponseWriter, r *http.Request) {
 			returnWebError(w, err)
 			return
 		}
-		fmt.Fprint(w, string(sJSON))
+		_, eFmt := fmt.Fprint(w, string(sJSON))
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	}
 }
 
 func webGetVoltageData(w http.ResponseWriter, r *http.Request) {
 	type voltage struct {
-		Logged float64	`json:"logged"`
-		Left float64	`json:"left"`
-		Right float64	`json:"right"`
+		Logged float64 `json:"logged"`
+		Left   float64 `json:"left"`
+		Right  float64 `json:"right"`
 	}
 	var voltageVal voltage
 	var voltageData []voltage = nil
@@ -631,7 +668,10 @@ func webGetVoltageData(w http.ResponseWriter, r *http.Request) {
 		group by unix_timestamp(logged) DIV 15`
 	rows, err := pDB.Query(sSQL)
 	if err != nil {
-		fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
+		_, eFmt := fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	} else {
 		for rows.Next() {
 			err = rows.Scan(&voltageVal.Logged, &voltageVal.Left, &voltageVal.Right)
@@ -646,32 +686,36 @@ func webGetVoltageData(w http.ResponseWriter, r *http.Request) {
 			returnWebError(w, err)
 			return
 		}
-		fmt.Fprint(w, string(sJSON))
+		_, eFmt := fmt.Fprint(w, string(sJSON))
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	}
 }
 
 /**
 Get the charging parameter values
- */
+*/
 func webGetChargingParameters(w http.ResponseWriter, _ *http.Request) {
 	sJSON, err := json.Marshal(setpoints)
 	if err != nil {
 		returnWebError(w, err)
 		return
 	}
-	fmt.Fprint(w, string(sJSON))
+	_, eFmt := fmt.Fprint(w, string(sJSON))
+	if eFmt != nil {
+		log.Println(eFmt)
+	}
 }
-
-
 
 /**
 Cell data including current and voltage for one cell
- */
+*/
 func webGetCellData(w http.ResponseWriter, r *http.Request) {
 	type values struct {
-		Logged float64	`json:"logged"`
-		Current float64	`json:"amps"`
-		Voltage float64	`json:"volts"`
+		Logged  float64 `json:"logged"`
+		Current float64 `json:"amps"`
+		Voltage float64 `json:"volts"`
 	}
 	var cellVal values
 	var cellData []values = nil
@@ -682,16 +726,19 @@ func webGetCellData(w http.ResponseWriter, r *http.Request) {
 
 	cell, _ := strconv.ParseInt(vars["cell"], 10, 16)
 	if (r.FormValue("minAmps") != "") && (r.FormValue("maxAmps") != "") {
-		sCurrentTerm = fmt.Sprintf(" and i.channel_%d > %s and i.channel_%d < %s", cell / 100, r.FormValue("minAmps"), cell / 100, r.FormValue("maxAmps"))
+		sCurrentTerm = fmt.Sprintf(" and i.channel_%d > %s and i.channel_%d < %s", cell/100, r.FormValue("minAmps"), cell/100, r.FormValue("maxAmps"))
 	}
 
 	sSQL := fmt.Sprintf(`select min(unix_timestamp(v.logged)) as logged, avg(cell_%03d) / 10000 as volts, avg(i.channel_%d) as amps
     from voltage v join current i on i.logged = from_unixtime(round(unix_timestamp(v.logged)))
-   where v.logged between '` + r.FormValue("start") + `' and '` + r.FormValue("end") + `'` + sCurrentTerm + `
-   group by unix_timestamp(v.logged) DIV 15`, cell, cell / 100)
+   where v.logged between '`+r.FormValue("start")+`' and '`+r.FormValue("end")+`'`+sCurrentTerm+`
+   group by unix_timestamp(v.logged) DIV 15`, cell, cell/100)
 	rows, err := pDB.Query(sSQL)
 	if err != nil {
-		fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
+		_, eFmt := fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	} else {
 		for rows.Next() {
 			err = rows.Scan(&cellVal.Logged, &cellVal.Voltage, &cellVal.Current)
@@ -706,7 +753,10 @@ func webGetCellData(w http.ResponseWriter, r *http.Request) {
 			returnWebError(w, err)
 			return
 		}
-		fmt.Fprint(w, string(sJSON))
+		_, eFmt := fmt.Fprint(w, string(sJSON))
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	}
 }
 
@@ -714,7 +764,7 @@ func SendSMAHeartBeat() {
 	heartbeat := time.NewTicker(time.Second)
 
 	bus, err := can.NewBusForInterfaceWithName("can0")
-//	var err error
+	//	var err error
 	loops := 0
 
 	if err != nil {
@@ -723,22 +773,22 @@ func SendSMAHeartBeat() {
 		log.Println("Connected to CAN bus - monitoring the inverters.")
 	}
 	for {
-		<- heartbeat.C
+		<-heartbeat.C
 		msg351 := CAN_351.New(setpoints.VSetpoint, setpoints.ISetpoint, setpoints.IDischarge, setpoints.VDischarge)
-//		log.Println("CAN-351 : ", msg351.Frame())
+		//		log.Println("CAN-351 : ", msg351.Frame())
 		err := bus.Publish(msg351.Frame())
 		if err != nil {
 			log.Println("CAN 351 Message error - ", err)
 		}
 		msg355 := CAN_355.New(uint16(fuelgauge.StateOfCharge()), 100.0, fuelgauge.StateOfCharge())
-//		log.Println("CAN-355 : ", msg355.Frame())
+		//		log.Println("CAN-355 : ", msg355.Frame())
 		err = bus.Publish(msg355.Frame())
 		if err != nil {
 			log.Println("CAN 355 Message error - ", err)
 		}
 
 		msg356 := CAN_356.New(ltc.GetActiveBatteryVoltage(), fuelgauge.Current(), ltc.GetMaxTemperature())
-//		log.Println("CAN-356 : ", msg356.Frame())
+		//		log.Println("CAN-356 : ", msg356.Frame())
 		err = bus.Publish(msg356.Frame())
 		if err != nil {
 			log.Println("CAN 356 Message error - ", err)
@@ -746,7 +796,7 @@ func SendSMAHeartBeat() {
 
 		if loops == 0 {
 			msg35E := CAN_35E.New("Encell")
-//			log.Println("CAN-35E : ", msg35E.Frame())
+			//			log.Println("CAN-35E : ", msg35E.Frame())
 			err = bus.Publish(msg35E.Frame())
 			if err != nil {
 				log.Println("CAN-35E Message error - ", err)
@@ -814,10 +864,10 @@ func mainImpl() error {
 	// Every minute we need to process the full charge data.
 	fullChargeTicker := time.NewTicker(time.Minute)
 	go func() {
-//		var bank0Full bool = false
-//		var bank1Full bool = false
-		var bank0WateredToday bool = false
-		var bank1WateredToday bool = false
+		//		var bank0Full bool = false
+		//		var bank1Full bool = false
+		var bank0WateredToday = false
+		var bank1WateredToday = false
 		for {
 			//			log.Println("Starting full charge checker.")
 			<-fullChargeTicker.C
@@ -828,12 +878,18 @@ func mainImpl() error {
 			if hour > 9 && hour < 19 {
 				if fuelgauge.ReadyToWater(0) && !bank0WateredToday {
 					// Water bank 0
-					fuelgauge.WaterBank(0, 15)
+					err := fuelgauge.WaterBank(0, 15)
+					if err != nil {
+						log.Println(err)
+					}
 					bank0WateredToday = true
 				}
 				if fuelgauge.ReadyToWater(1) && !bank1WateredToday {
 					// Water bank 1
-					fuelgauge.WaterBank(1, 15)
+					err := fuelgauge.WaterBank(1, 15)
+					if err != nil {
+						log.Println(err)
+					}
 					bank1WateredToday = true
 				}
 				// If the evaluator pointer is nil then create a new evaluator
@@ -861,7 +917,7 @@ func mainImpl() error {
 				if fuelgauge.TestFullCharge(0) && !fuelgauge.TestFullCharge(1) {
 					fuelgauge.SwitchOffBank(0)
 				} else {
-					fuelgauge.SwitchOffBank( 1)
+					fuelgauge.SwitchOffBank(1)
 				}
 				if fuelgauge.TestFullCharge(0) && fuelgauge.TestFullCharge(1) {
 					setpoints.VTargetSetpoint = setpoints.VChargedSetpoint
@@ -1010,7 +1066,10 @@ func connectToDatabase() (*sql.DB, error) {
                                  ,?,?)`
 	voltageStatement, err = db.Prepare(sSQL)
 	if err != nil {
-		db.Close()
+		errClose := db.Close()
+		if errClose != nil {
+			log.Println(errClose)
+		}
 		return nil, err
 	}
 
@@ -1026,7 +1085,10 @@ func connectToDatabase() (*sql.DB, error) {
                                    ,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`
 	temperatureStatement, err = db.Prepare(sSQL)
 	if err != nil {
-		db.Close()
+		errClose := db.Close()
+		if errClose != nil {
+			log.Println(errClose)
+		}
 		return nil, err
 	} else {
 		return db, err
@@ -1035,13 +1097,13 @@ func connectToDatabase() (*sql.DB, error) {
 
 func init() {
 	// Set up the parameters to send to the inverter.
-	setpoints.VSetpoint = 64.5
+	setpoints.VSetpoint = 65.0
 	setpoints.ISetpoint = 1200.0
-	setpoints.VTargetSetpoint = 64.5
+	setpoints.VTargetSetpoint = 65.0
 	setpoints.ITargetSetpoint = 1200.0
 	setpoints.VDischarge = 36.0
 	setpoints.IDischarge = 1200.0
-	setpoints.VChargingSetpoint = 64.5
+	setpoints.VChargingSetpoint = 65.0
 	setpoints.VChargedSetpoint = 61.0
 	setpoints.IChargingSetpoint = 1200.0
 	setpoints.IChargedSetpoint = 35.0
@@ -1078,7 +1140,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	spiConnection, err = p.Connect(SPI_BAUD_RATE, spi.Mode0, SPI_BITS_PER_WORD)
+	spiConnection, err = p.Connect(SPIBAUDRATE, spi.Mode0, SPIBITSPERWORD)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -1098,9 +1160,9 @@ func init() {
 /*
 	WEB Service to return the version information
 */
-func getVersion(w http.ResponseWriter, r *http.Request) {
+func getVersion(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	fmt.Fprint(w, `<html>
+	_, err := fmt.Fprint(w, `<html>
   <head>
     <Cedar Technology Battery Manager>
   </head>
@@ -1109,6 +1171,9 @@ func getVersion(w http.ResponseWriter, r *http.Request) {
     <h2>Version 1.0 - March 27th 2020</h2>
   </body>
 </html>`)
+	if err != nil {
+		log.Print("getVersion() - ", err)
+	}
 }
 
 /*
@@ -1116,8 +1181,8 @@ WEB service to return current process values
 */
 
 func getValues(w http.ResponseWriter, _ *http.Request) {
-	ltc_lock.Lock()
-	defer ltc_lock.Unlock()
+	ltcLock.Lock()
+	defer ltcLock.Unlock()
 	// This header allows the output to be used in a WEB page from another server as a data source for some controls
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 
@@ -1142,11 +1207,14 @@ func getI2Cread(w http.ResponseWriter, r *http.Request) {
 	sensor, _ := strconv.ParseInt(r.URL.Query().Get("sensor"), 0, 8)
 	s, err := ltc.ReadI2CWord(int(sensor), LTC6813.LTC2944Address, uint8(reg))
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	fmt.Fprint(w, "Request = ", r.URL.Query().Get("reg"), "\n")
+	_, err2 := fmt.Fprint(w, "Request = ", r.URL.Query().Get("reg"), "\n")
 	if err != nil {
-		fmt.Fprint(w, "Error - ", err)
+		_, err2 = fmt.Fprint(w, "Error - ", err)
 	} else {
-		fmt.Fprintf(w, s)
+		_, err2 = fmt.Fprintf(w, s)
+	}
+	if err2 != nil {
+		log.Print("getI2Cread() - ", err2)
 	}
 }
 
@@ -1164,11 +1232,14 @@ func getI2CreadByte(w http.ResponseWriter, r *http.Request) {
 	}
 	s, err := ltc.ReadI2CByte(int(sensor), LTC6813.LTC2944Address, uint8(reg))
 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	fmt.Fprint(w, "Request = ", r.URL.Query().Get("reg"), "\n")
+	_, err2 := fmt.Fprint(w, "Request = ", r.URL.Query().Get("reg"), "\n")
 	if err != nil {
-		fmt.Fprint(w, "Error - ", err)
+		_, err2 = fmt.Fprint(w, "Error - ", err)
 	} else {
-		fmt.Fprintf(w, s)
+		_, err2 = fmt.Fprintf(w, s)
+	}
+	if err2 != nil {
+		log.Print("getI2CreadByte() - ", err2)
 	}
 }
 
@@ -1180,9 +1251,15 @@ func getI2CCurrent(w http.ResponseWriter, r *http.Request) {
 
 	t, err := ltc.GetI2CCurrent(int(sensor))
 	if err != nil {
-		fmt.Fprint(w, err)
+		_, eFmt := fmt.Fprint(w, err)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	} else {
-		fmt.Fprintf(w, "Current on sensor %d = %f", sensor, t)
+		_, eFmt := fmt.Fprintf(w, "Current on sensor %d = %f", sensor, t)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	}
 }
 
@@ -1194,9 +1271,15 @@ func getI2CVoltage(w http.ResponseWriter, r *http.Request) {
 
 	t, err := ltc.GetI2CVoltage(int(sensor))
 	if err != nil {
-		fmt.Fprint(w, err)
+		_, eFmt := fmt.Fprint(w, err)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	} else {
-		fmt.Fprintf(w, "Voltage on sensor %d = %f", sensor, t)
+		_, eFmt := fmt.Fprintf(w, "Voltage on sensor %d = %f", sensor, t)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	}
 }
 
@@ -1208,9 +1291,15 @@ func getI2CCharge(w http.ResponseWriter, r *http.Request) {
 
 	t, err := ltc.GetI2CAccumulatedCharge(int(sensor))
 	if err != nil {
-		fmt.Fprint(w, err)
+		_, eFmt := fmt.Fprint(w, err)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	} else {
-		fmt.Fprintf(w, "Accumulated charge on sensor %d = %f", sensor, t)
+		_, eFmt := fmt.Fprintf(w, "Accumulated charge on sensor %d = %f", sensor, t)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	}
 }
 
@@ -1222,9 +1311,15 @@ func getI2CTemp(w http.ResponseWriter, r *http.Request) {
 
 	t, err := ltc.GetI2CTemp(int(sensor))
 	if err != nil {
-		fmt.Fprint(w, err)
+		_, eFmt := fmt.Fprint(w, err)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	} else {
-		fmt.Fprintf(w, "Temperature on sensor %d = %f", sensor, t)
+		_, eFmt := fmt.Fprintf(w, "Temperature on sensor %d = %f", sensor, t)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	}
 }
 
@@ -1249,9 +1344,15 @@ func getI2Cwrite(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	//	fmt.Fprint(w, "Request = ", r.URL.Query().Get("reg"), "\n")
 	if err != nil {
-		fmt.Fprint(w, "Error - ", err)
+		_, eFmt := fmt.Fprint(w, "Error - ", err)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	} else {
-		fmt.Fprintf(w, "Register %d set 0x%x", reg, value)
+		_, eFmt := fmt.Fprintf(w, "Register %d set 0x%x", reg, value)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 	}
 }
 
@@ -1260,7 +1361,10 @@ func main() {
 	signal = sync.NewCond(&sync.Mutex{})
 
 	if err := mainImpl(); err != nil {
-		fmt.Fprintf(os.Stderr, "BatteryMonitor6813V4 Error: %s.\n", err)
+		_, eFmt := fmt.Fprintf(os.Stderr, "BatteryMonitor6813V4 Error: %s.\n", err)
+		if eFmt != nil {
+			log.Println(eFmt)
+		}
 		os.Exit(1)
 	}
 	fmt.Println("Program has ended.")
