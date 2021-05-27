@@ -938,7 +938,7 @@ func mainImpl() error {
 			// While the bank 1 cells are problematic we need to switch to bank 0 at 8:00PM
 			if (hour == 20) && (time.Now().Minute() == 0) {
 				log.Println("Switching off right bank at 8PM")
-				go fuelgauge.SwitchOffBank(FuelGauge.RIGHT_BANK)
+				go fuelgauge.SwitchOffBank(FuelGauge.RightBank)
 			}
 			// Manage the battery fan based on the maximum temperature. If one or more temperature sensors
 			// show more than 42.0 C then turn on the fan if it is off. If the fan is on and the temperature is below 40.0

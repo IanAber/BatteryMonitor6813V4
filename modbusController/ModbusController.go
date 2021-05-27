@@ -4,8 +4,8 @@ import (
 	"encoding/binary"
 	"fmt"
 	"github.com/goburrow/modbus"
+	"log"
 	"sync"
-	"time"
 )
 
 type ModbusController struct {
@@ -17,145 +17,148 @@ type ModbusController struct {
 /**
 *  Set up a new ModBus using the parameters given. No attempt is made to connect at this time.
  */
-func New(rtuAddress string, baudRate int, dataBits int, stopBits int, parity string, timeout time.Duration) *ModbusController {
-	this := new(ModbusController)
-	this.rtuClient = modbus.NewRTUClientHandler(rtuAddress)
-	this.rtuClient.BaudRate = baudRate
-	this.rtuClient.DataBits = dataBits
-	this.rtuClient.Timeout = timeout
-	this.rtuClient.Parity = parity
-	this.rtuClient.StopBits = stopBits
-	this.rtuClient.SlaveId = 1
+//func New(rtuAddress string, baudRate int, dataBits int, stopBits int, parity string, timeout time.Duration) *ModbusController {
+//	this := new(ModbusController)
+//	this.rtuClient = modbus.NewRTUClientHandler(rtuAddress)
+//	this.rtuClient.BaudRate = baudRate
+//	this.rtuClient.DataBits = dataBits
+//	this.rtuClient.Timeout = timeout
+//	this.rtuClient.Parity = parity
+//	this.rtuClient.StopBits = stopBits
+//	this.rtuClient.SlaveId = 1
+//
+//	return this
+//}
 
-	return this
-}
-
-func (this *ModbusController) Close() {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	if this.rtuClient != nil {
-		this.rtuClient.Close()
+func (modbusController *ModbusController) Close() {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	if modbusController.rtuClient != nil {
+		closeErr := modbusController.rtuClient.Close()
+		if closeErr != nil {
+			log.Println(closeErr)
+		}
 	}
 }
 
-func (this *ModbusController) Connect() error {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	err := this.rtuClient.Connect()
+func (modbusController *ModbusController) Connect() error {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	err := modbusController.rtuClient.Connect()
 	if err != nil {
 		return err
 	}
-	this.modbusClient = modbus.NewClient(this.rtuClient)
+	modbusController.modbusClient = modbus.NewClient(modbusController.rtuClient)
 	return nil
 }
 
-func (this *ModbusController) readCoil(coil uint16) (bool, error) {
-	data, err := this.modbusClient.ReadCoils(coil, 1)
+func (modbusController *ModbusController) readCoil(coil uint16) (bool, error) {
+	data, err := modbusController.modbusClient.ReadCoils(coil, 1)
 	if err != nil {
 		return false, err
 	} else {
 		if len(data) != 1 {
-			return false, fmt.Errorf("Read Coil %d returned %d bytes when 1 was expected.", coil, len(data))
+			return false, fmt.Errorf("read coil %d returned %d bytes when 1 was expected", coil, len(data))
 		} else {
 			return data[0] != 0, nil
 		}
 	}
 }
 
-func (this *ModbusController) ReadCoil(coil uint16, slaveId uint8) (bool, error) {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	this.rtuClient.SlaveId = slaveId
-	return this.readCoil(coil)
+func (modbusController *ModbusController) ReadCoil(coil uint16, slaveId uint8) (bool, error) {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	modbusController.rtuClient.SlaveId = slaveId
+	return modbusController.readCoil(coil)
 }
 
-func (this *ModbusController) WriteCoil(coil uint16, value bool, slaveId uint8) error {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	this.rtuClient.SlaveId = slaveId
+func (modbusController *ModbusController) WriteCoil(coil uint16, value bool, slaveId uint8) error {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	modbusController.rtuClient.SlaveId = slaveId
 	var err error
 	if value {
-		_, err = this.modbusClient.WriteSingleCoil(coil, 0xFF00)
+		_, err = modbusController.modbusClient.WriteSingleCoil(coil, 0xFF00)
 	} else {
-		_, err = this.modbusClient.WriteSingleCoil(coil, 0x0000)
+		_, err = modbusController.modbusClient.WriteSingleCoil(coil, 0x0000)
 	}
 	return err
 }
 
-func (this *ModbusController) readHoldingRegister(register uint16) (uint16, error) {
-	data, err := this.modbusClient.ReadHoldingRegisters(register, 1)
+func (modbusController *ModbusController) readHoldingRegister(register uint16) (uint16, error) {
+	data, err := modbusController.modbusClient.ReadHoldingRegisters(register, 1)
 	if err != nil {
 		return 0, err
 	} else {
 		if len(data) != 2 {
-			return 0, fmt.Errorf("Read Holding Register %d returned %d bytes when 2 were expected.", register, len(data))
+			return 0, fmt.Errorf("read holding register %d returned %d bytes when 2 were expected", register, len(data))
 		} else {
 			return binary.BigEndian.Uint16(data), nil
 		}
 	}
 }
 
-func (this *ModbusController) ReadHoldingRegister(holdingRegister uint16, slaveId uint8) (uint16, error) {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	this.rtuClient.SlaveId = slaveId
-	return this.readHoldingRegister(holdingRegister)
+func (modbusController *ModbusController) ReadHoldingRegister(holdingRegister uint16, slaveId uint8) (uint16, error) {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	modbusController.rtuClient.SlaveId = slaveId
+	return modbusController.readHoldingRegister(holdingRegister)
 }
 
-func (this *ModbusController) readHoldingRegisterDiv10(register uint16) (float32, error) {
-	data, err := this.modbusClient.ReadHoldingRegisters(register, 1)
+func (modbusController *ModbusController) readHoldingRegisterDiv10(register uint16) (float32, error) {
+	data, err := modbusController.modbusClient.ReadHoldingRegisters(register, 1)
 	if err != nil {
 		return 0, err
 	} else {
 		if len(data) != 2 {
-			return 0, fmt.Errorf("Read Holding Register %d returned %d bytes when 2 were expected.", register, len(data))
+			return 0, fmt.Errorf("read holding register %d returned %d bytes when 2 were expected", register, len(data))
 		} else {
-			return (float32(binary.BigEndian.Uint16(data)) / 10), nil
+			return float32(binary.BigEndian.Uint16(data)) / 10, nil
 		}
 	}
 }
 
-func (this *ModbusController) WriteHoldingRegister(register uint16, value uint16, slaveId uint8) error {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	this.rtuClient.SlaveId = slaveId
-	_, err := this.modbusClient.WriteSingleRegister(register, value)
+func (modbusController *ModbusController) WriteHoldingRegister(register uint16, value uint16, slaveId uint8) error {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	modbusController.rtuClient.SlaveId = slaveId
+	_, err := modbusController.modbusClient.WriteSingleRegister(register, value)
 	return err
 }
 
-func (this *ModbusController) writeHoldingRegisterFloat(register uint16, value float32) error {
-	_, err := this.modbusClient.WriteSingleRegister(register, uint16(value*10))
+func (modbusController *ModbusController) writeHoldingRegisterFloat(register uint16, value float32) error {
+	_, err := modbusController.modbusClient.WriteSingleRegister(register, uint16(value*10))
 	return err
 }
 
-func (this *ModbusController) readInputRegister(register uint16) (uint16, error) {
-	data, err := this.modbusClient.ReadInputRegisters(register, 1)
+func (modbusController *ModbusController) readInputRegister(register uint16) (uint16, error) {
+	data, err := modbusController.modbusClient.ReadInputRegisters(register, 1)
 	if err != nil {
 		fmt.Println("Register = ", register, " Error = ", err)
 		return 0, err
 	} else {
 		if len(data) != 2 {
-			return 0, fmt.Errorf("Read Input Register %d returned %d bytes when 2 were expected.", register, len(data))
+			return 0, fmt.Errorf("read input register %d returned %d bytes when 2 were expected", register, len(data))
 		} else {
 			return binary.BigEndian.Uint16(data), nil
 		}
 	}
 }
 
-func (this *ModbusController) ReadInputRegister(holdingRegister uint16, slaveId uint8) (uint16, error) {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	this.rtuClient.SlaveId = slaveId
-	return this.readInputRegister(holdingRegister)
+func (modbusController *ModbusController) ReadInputRegister(holdingRegister uint16, slaveId uint8) (uint16, error) {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	modbusController.rtuClient.SlaveId = slaveId
+	return modbusController.readInputRegister(holdingRegister)
 }
 
-func (this *ModbusController) readDiscreteInput(input uint16) (bool, error) {
-	data, err := this.modbusClient.ReadDiscreteInputs(input, 1)
+func (modbusController *ModbusController) readDiscreteInput(input uint16) (bool, error) {
+	data, err := modbusController.modbusClient.ReadDiscreteInputs(input, 1)
 	if err != nil {
 		return false, err
 	} else {
 		if len(data) != 1 {
-			return false, fmt.Errorf("Read Discrete Input %d returned %d bytes when 1 was expected.", input, len(data))
+			return false, fmt.Errorf("read discrete input %d returned %d bytes when 1 was expected", input, len(data))
 		} else {
 			return data[0] != 0, nil
 		}
@@ -168,7 +171,7 @@ func convertBitsToBools(byteData []byte, length uint16) []bool {
 		for bit := 0; bit < 8; bit++ {
 			boolIndex := uint16((i * 8) + bit)
 			if boolIndex < length {
-				boolData[(i*8)+bit] = ((b & 1) != 0)
+				boolData[(i*8)+bit] = (b & 1) != 0
 			}
 			b >>= 1
 		}
@@ -176,12 +179,12 @@ func convertBitsToBools(byteData []byte, length uint16) []bool {
 	return boolData
 }
 
-func (this *ModbusController) ReadMultipleDiscreteRegisters(start uint16, count uint16, slaveId uint8) ([]bool, error) {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	this.rtuClient.SlaveId = slaveId
+func (modbusController *ModbusController) ReadMultipleDiscreteRegisters(start uint16, count uint16, slaveId uint8) ([]bool, error) {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	modbusController.rtuClient.SlaveId = slaveId
 	fmt.Println("Reading ", count, " input registers starting at ", start)
-	mbData, err := this.modbusClient.ReadDiscreteInputs(start, count)
+	mbData, err := modbusController.modbusClient.ReadDiscreteInputs(start, count)
 	if err != nil {
 		return make([]bool, count), err
 	} else {
@@ -189,11 +192,11 @@ func (this *ModbusController) ReadMultipleDiscreteRegisters(start uint16, count 
 	}
 }
 
-func (this *ModbusController) ReadMultipleCoils(start uint16, count uint16, slaveId uint8) ([]bool, error) {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	this.rtuClient.SlaveId = slaveId
-	mbData, err := this.modbusClient.ReadCoils(start, count)
+func (modbusController *ModbusController) ReadMultipleCoils(start uint16, count uint16, slaveId uint8) ([]bool, error) {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	modbusController.rtuClient.SlaveId = slaveId
+	mbData, err := modbusController.modbusClient.ReadCoils(start, count)
 	if err != nil {
 		return make([]bool, count), err
 	} else {
@@ -209,25 +212,25 @@ func convertBytesToWords(byteData []byte) []uint16 {
 	return wordData
 }
 
-func (this *ModbusController) ReadMultipleInputRegisters(start uint16, count uint16, slaveId uint8) ([]uint16, error) {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	this.rtuClient.SlaveId = slaveId
-	mbData, err := this.modbusClient.ReadInputRegisters(start, count)
+func (modbusController *ModbusController) ReadMultipleInputRegisters(start uint16, count uint16, slaveId uint8) ([]uint16, error) {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	modbusController.rtuClient.SlaveId = slaveId
+	mbData, err := modbusController.modbusClient.ReadInputRegisters(start, count)
 	return convertBytesToWords(mbData), err
 }
 
-func (this *ModbusController) ReadMultipleHoldingRegisters(start uint16, count uint16, slaveId uint8) ([]uint16, error) {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	this.rtuClient.SlaveId = slaveId
-	mbData, err := this.modbusClient.ReadHoldingRegisters(start, count)
+func (modbusController *ModbusController) ReadMultipleHoldingRegisters(start uint16, count uint16, slaveId uint8) ([]uint16, error) {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	modbusController.rtuClient.SlaveId = slaveId
+	mbData, err := modbusController.modbusClient.ReadHoldingRegisters(start, count)
 	return convertBytesToWords(mbData), err
 }
 
-func (this *ModbusController) ReadDiscreteInput(input uint16, slaveId uint8) (bool, error) {
-	this.mu.Lock()
-	defer this.mu.Unlock()
-	this.rtuClient.SlaveId = slaveId
-	return this.readCoil(input)
+func (modbusController *ModbusController) ReadDiscreteInput(input uint16, slaveId uint8) (bool, error) {
+	modbusController.mu.Lock()
+	defer modbusController.mu.Unlock()
+	modbusController.rtuClient.SlaveId = slaveId
+	return modbusController.readCoil(input)
 }

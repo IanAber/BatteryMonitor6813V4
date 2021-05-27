@@ -27,12 +27,12 @@ type fuelGaugeChannel struct {
 	LastFullCharge mysql.NullTime
 }
 
-type batterySettings struct {
-	CapacityLeft        float32
-	CapacityRight       float32
-	LastFullChargeLeft  mysql.NullTime
-	LastFullChargeRight mysql.NullTime
-}
+//type batterySettings struct {
+//	CapacityLeft        float32
+//	CapacityRight       float32
+//	LastFullChargeLeft  mysql.NullTime
+//	LastFullChargeRight mysql.NullTime
+//}
 
 type FuelGauge struct {
 	mbus                 *ModbusController.ModbusController
@@ -79,126 +79,127 @@ type RegisterRequest struct {
 	Value int16  `json:"value"`
 }
 
-const WATER_CHARGE_THRESHOLD = 98.0 // The state of charge point reached at which the watering system is turned on.
-const LEFT_BANK = 0
-const RIGHT_BANK = 1
-const LEFT_BANK_CELL_COUNT = 37
-const RIGHT_BANK_CELL_COUNT = 38
+const WATERCHARGETHRESHOLD = 98.0 // The state of charge point reached at which the watering system is turned on.
+const LeftBank = 0
+const RightBank = 1
+
+//const LeftBankCellCount = 37
+//const RightBankCellCount = 38
 
 // Digital Inputs
-const LEFT_BANK_SENSE = 0
-const RIGHT_BANK_SENSE = 1
+const LeftBankSense = 0
+const RightBankSense = 1
 
 // Coils
-const LEFT_BANK_ON_RELAY = 1
-const LEFT_BANK_OFF_RELAY = 2
-const RIGHT_BANK_ON_RELAY = 3
-const RIGHT_BANK_OFF_RELAY = 4
-const BATTERY_FAN_RELAY = 8
-const LEFT_WATER_RELAY = 6
-const RIGHT_WATER_RELAY = 8
+const LeftBankOnRelay = 1
+const LeftBankOffRelay = 2
+const RightBankOnRelay = 3
+const RightBankOffRelay = 4
+const BatteryFanRelay = 8
+const LeftWaterRelay = 6
+const RightWaterRelay = 8
 
 // Input Registers
-const CURRENT_REGISTER = 1
-const ANALOGUE_0 = 2
-const ANALOGUE_1 = 3
-const ANALOGUE_2 = 4
-const ANALOGUE_3 = 5
-const ANALOGUE_6 = 6
-const ANALOGUE_7 = 7
-const AVG_CURRENT = 8
-const RAW_CURRENT = 9
-const UPTIME_LOW = 10
-const UPTIME_HIGH = 11
+const CurrentRegister = 1
+const Analogue0 = 2
+const Analogue1 = 3
+const Analogue2 = 4
+const Analogue3 = 5
+const Analogue6 = 6
+const Analogue7 = 7
+const AvgCurrent = 8
+const RawCurrent = 9
+const UptimeLow = 10
+const UptimeHigh = 11
 
 // Holding Registers
-const SLAVE_ID_REGISTER = 1
-const BAUD_RATE_REGISTER = 2
-const OFFSET_REGISTER = 3
-const PGA_GAIN_REGISTER = 4
-const SAMPLES_PER_SEC_REG = 5
-const CHARGE_REGISTER = 6
-const CURRENT_GAIN_REG = 7
-const EFFICIENCY_REG = 8
+const SlaveIdRegister = 1
+const BaudRateRegister = 2
+const OffsetRegister = 3
+const PgaGainRegister = 4
+const SamplesPerSecReg = 5
+const ChargeRegister = 6
+const CurrentGainReg = 7
+const EfficiencyReg = 8
 
 // Coils
-const RELAY_1_COIL = 1
-const RELAY_2_COIL = 2
-const RELAY_3_COIL = 3
-const RELAY_4_COIL = 4
-const RELAY_5_COIL = 5
-const RELAY_6_COIL = 6
-const RELAY_7_COIL = 7
-const RELAY_8_COIL = 8
-const MOMENTARY_1_COIL = 9
-const MOMENTARY_2_COIL = 10
-const MOMENTARY_3_COIL = 11
-const MOMENTARY_4_COIL = 12
-const MOMENTARY_5_COIL = 13
-const MOMENTARY_6_COIL = 14
-const MOMENTARY_7_COIL = 15
-const MOMENTARY_8_COIL = 16
+const Relay1Coil = 1
+const Relay2Coil = 2
+const Relay3Coil = 3
+const Relay4Coil = 4
+const Relay5Coil = 5
+const Relay6Coil = 6
+const Relay7Coil = 7
+const Relay8Coil = 8
+const Momentary1Coil = 9
+const Momentary2Coil = 10
+const Momentary3Coil = 11
+const Momentary4Coil = 12
+const Momentary5Coil = 13
+const Momentary6Coil = 14
+const Momentary7Coil = 15
+const Momentary8Coil = 16
 
 // Discrete Inputs
-const DISCRETE_1 = 1
-const DISCRETE_2 = 2
-const DISCRETE_3 = 3
-const DISCRETE_4 = 4
-const DISCRETE_5 = 5
-const DISCRETE_6 = 6
-const DISCRETE_7 = 7
-const DISCRETE_8 = 8
-const I2C_FAILURE = 9
+const Discrete1 = 1
+const Discrete2 = 2
+const Discrete3 = 3
+const Discrete4 = 4
+const Discrete5 = 5
+const Discrete6 = 6
+const Discrete7 = 7
+const Discrete8 = 8
+const I2cFailure = 9
 
 var EndPoints = []ModbusEndPoint{
-	{"1", "Current", CURRENT_REGISTER, InputRegister, 100, "A", false, true},
-	{"2", "Analog In 0", ANALOGUE_0, InputRegister, 1, "", false, false},
-	{"3", "Analog In 1", ANALOGUE_1, InputRegister, 1, "", false, false},
-	{"4", "Analog In 2", ANALOGUE_2, InputRegister, 1, "", false, false},
-	{"5", "Analog In 3", ANALOGUE_3, InputRegister, 1, "", false, false},
-	{"6", "Analog In 6", ANALOGUE_6, InputRegister, 1, "", false, true},
-	{"7", "Analog In 7", ANALOGUE_7, InputRegister, 1, "", false, true},
-	{"8", "Avg Current", AVG_CURRENT, InputRegister, 100, "A", false, true},
-	{"9", "Raw Current", RAW_CURRENT, InputRegister, 1, "", false, true},
+	{"1", "Current", CurrentRegister, InputRegister, 100, "A", false, true},
+	{"2", "Analog In 0", Analogue0, InputRegister, 1, "", false, false},
+	{"3", "Analog In 1", Analogue1, InputRegister, 1, "", false, false},
+	{"4", "Analog In 2", Analogue2, InputRegister, 1, "", false, false},
+	{"5", "Analog In 3", Analogue3, InputRegister, 1, "", false, false},
+	{"6", "Analog In 6", Analogue6, InputRegister, 1, "", false, true},
+	{"7", "Analog In 7", Analogue7, InputRegister, 1, "", false, true},
+	{"8", "Avg Current", AvgCurrent, InputRegister, 100, "A", false, true},
+	{"9", "Raw Current", RawCurrent, InputRegister, 1, "", false, true},
 	{"x1", "", 0, Blank, 0, "", false, false},
-	{"10", "Up Time Low", UPTIME_LOW, InputRegister, 1, "", false, false},
-	{"11", "Up Time High", UPTIME_HIGH, InputRegister, 1, "", false, false},
+	{"10", "Up Time Low", UptimeLow, InputRegister, 1, "", false, false},
+	{"11", "Up Time High", UptimeHigh, InputRegister, 1, "", false, false},
 
-	{"1", "Slave ID", SLAVE_ID_REGISTER, HoldingRegister, 1, "", true, false},
-	{"2", "Baud Rate", BAUD_RATE_REGISTER, HoldingRegister, 1, "", true, false},
-	{"3", "Offset", OFFSET_REGISTER, HoldingRegister, 1, "", true, true},
-	{"4", "PGA Gain", PGA_GAIN_REGISTER, HoldingRegister, 1, "", true, false},
-	{"5", "Samples Per Sec", SAMPLES_PER_SEC_REG, HoldingRegister, 1, "", true, false},
-	{"6", "Charge", CHARGE_REGISTER, HoldingRegister, 10, "Ahr", true, true},
-	{"7", "Current Gain", CURRENT_GAIN_REG, HoldingRegister, 1, "", true, true},
-	{"8", "Charge Efficiency", EFFICIENCY_REG, HoldingRegister, 2, "%", true, true},
+	{"1", "Slave ID", SlaveIdRegister, HoldingRegister, 1, "", true, false},
+	{"2", "Baud Rate", BaudRateRegister, HoldingRegister, 1, "", true, false},
+	{"3", "Offset", OffsetRegister, HoldingRegister, 1, "", true, true},
+	{"4", "PGA Gain", PgaGainRegister, HoldingRegister, 1, "", true, false},
+	{"5", "Samples Per Sec", SamplesPerSecReg, HoldingRegister, 1, "", true, false},
+	{"6", "Charge", ChargeRegister, HoldingRegister, 10, "Ahr", true, true},
+	{"7", "Current Gain", CurrentGainReg, HoldingRegister, 1, "", true, true},
+	{"8", "Charge Efficiency", EfficiencyReg, HoldingRegister, 2, "%", true, true},
 
-	{"1", "Relay 1", RELAY_1_COIL, Coil, 1, "", true, false},
-	{"2", "Relay 2", RELAY_2_COIL, Coil, 1, "", true, false},
-	{"3", "Relay 3", RELAY_3_COIL, Coil, 1, "", true, false},
-	{"4", "Relay 4", RELAY_4_COIL, Coil, 1, "", true, false},
-	{"5", "Relay 5", RELAY_5_COIL, Coil, 1, "", true, false},
-	{"6", "Relay 6", RELAY_6_COIL, Coil, 1, "", true, false},
-	{"7", "Relay 7", RELAY_7_COIL, Coil, 1, "", true, false},
-	{"8", "Relay 8", RELAY_8_COIL, Coil, 1, "", true, false},
-	{"9", "Momentary 1", MOMENTARY_1_COIL, Coil, 1, "", true, false},
-	{"10", "Momentary 2", MOMENTARY_2_COIL, Coil, 1, "", true, false},
-	{"11", "Momentary 3", MOMENTARY_3_COIL, Coil, 1, "", true, false},
-	{"12", "Momentary 4", MOMENTARY_4_COIL, Coil, 1, "", true, false},
-	{"13", "Momentary 5", MOMENTARY_5_COIL, Coil, 1, "", true, false},
-	{"14", "Momentary 6", MOMENTARY_6_COIL, Coil, 1, "", true, false},
-	{"15", "Momentary 7", MOMENTARY_7_COIL, Coil, 1, "", true, false},
-	{"16", "Momentary 8", MOMENTARY_8_COIL, Coil, 1, "", true, false},
+	{"1", "Relay 1", Relay1Coil, Coil, 1, "", true, false},
+	{"2", "Relay 2", Relay2Coil, Coil, 1, "", true, false},
+	{"3", "Relay 3", Relay3Coil, Coil, 1, "", true, false},
+	{"4", "Relay 4", Relay4Coil, Coil, 1, "", true, false},
+	{"5", "Relay 5", Relay5Coil, Coil, 1, "", true, false},
+	{"6", "Relay 6", Relay6Coil, Coil, 1, "", true, false},
+	{"7", "Relay 7", Relay7Coil, Coil, 1, "", true, false},
+	{"8", "Relay 8", Relay8Coil, Coil, 1, "", true, false},
+	{"9", "Momentary 1", Momentary1Coil, Coil, 1, "", true, false},
+	{"10", "Momentary 2", Momentary2Coil, Coil, 1, "", true, false},
+	{"11", "Momentary 3", Momentary3Coil, Coil, 1, "", true, false},
+	{"12", "Momentary 4", Momentary4Coil, Coil, 1, "", true, false},
+	{"13", "Momentary 5", Momentary5Coil, Coil, 1, "", true, false},
+	{"14", "Momentary 6", Momentary6Coil, Coil, 1, "", true, false},
+	{"15", "Momentary 7", Momentary7Coil, Coil, 1, "", true, false},
+	{"16", "Momentary 8", Momentary8Coil, Coil, 1, "", true, false},
 
-	{"1", "Digital In 1", DISCRETE_1, Discrete, 1, "", false, false},
-	{"2", "Digital In 2", DISCRETE_2, Discrete, 1, "", false, false},
-	{"3", "Digital In 3", DISCRETE_3, Discrete, 1, "", false, false},
-	{"4", "Digital In 4", DISCRETE_4, Discrete, 1, "", false, false},
-	{"5", "Digital In 5", DISCRETE_5, Discrete, 1, "", false, false},
-	{"6", "Digital In 6", DISCRETE_6, Discrete, 1, "", false, false},
-	{"7", "Digital In 7", DISCRETE_7, Discrete, 1, "", false, false},
-	{"8", "Digital In 8", DISCRETE_8, Discrete, 1, "", false, false},
-	{"9", "I2C Failure", I2C_FAILURE, Discrete, 1, "", false, false},
+	{"1", "Digital In 1", Discrete1, Discrete, 1, "", false, false},
+	{"2", "Digital In 2", Discrete2, Discrete, 1, "", false, false},
+	{"3", "Digital In 3", Discrete3, Discrete, 1, "", false, false},
+	{"4", "Digital In 4", Discrete4, Discrete, 1, "", false, false},
+	{"5", "Digital In 5", Discrete5, Discrete, 1, "", false, false},
+	{"6", "Digital In 6", Discrete6, Discrete, 1, "", false, false},
+	{"7", "Digital In 7", Discrete7, Discrete, 1, "", false, false},
+	{"8", "Digital In 8", Discrete8, Discrete, 1, "", false, false},
+	{"9", "I2C Failure", I2cFailure, Discrete, 1, "", false, false},
 }
 
 const (
@@ -212,47 +213,53 @@ const (
 /**
 Change the state of a coil (relay)
 */
-func (this *FuelGauge) WebToggleCoil(w http.ResponseWriter, r *http.Request) {
+func (fuelgauge *FuelGauge) WebToggleCoil(w http.ResponseWriter, r *http.Request) {
 	address := r.FormValue("coil")
 	var dataPointer *Data.Data
 
 	slaveVal, _ := strconv.ParseUint(r.FormValue("slave"), 10, 16)
-	if uint8(slaveVal) == (this.FgLeft.SlaveAddress) {
-		dataPointer = this.FgLeft.ModbusData
+	if uint8(slaveVal) == (fuelgauge.FgLeft.SlaveAddress) {
+		dataPointer = fuelgauge.FgLeft.ModbusData
 	} else {
-		dataPointer = this.FgRight.ModbusData
+		dataPointer = fuelgauge.FgRight.ModbusData
 	}
 	// coil
 	n, _ := strconv.ParseUint(address, 10, 16)
 
 	nIndex := uint16(n)
 	nIndex = nIndex - dataPointer.CoilStart() // nIndex is now 0 based
-	err := this.mbus.WriteCoil(uint16(nIndex)+dataPointer.CoilStart(), !dataPointer.Coil[nIndex], dataPointer.SlaveAddress)
+	err := fuelgauge.mbus.WriteCoil(nIndex+dataPointer.CoilStart(), !dataPointer.Coil[nIndex], dataPointer.SlaveAddress)
 	if err != nil {
 		dataPointer.LastError = err.Error()
 	}
 	w.Header().Set("Cache-Control", "no-store")
-	fmt.Fprint(w, "Coil ", nIndex+dataPointer.CoilStart(), " on slave ", dataPointer.SlaveAddress, " toggled.")
-	//	getValues(true, dataPointer, this.mbus)
+	_, err = fmt.Fprint(w, "Coil ", nIndex+dataPointer.CoilStart(), " on slave ", dataPointer.SlaveAddress, " toggled.")
+	if err != nil {
+		log.Println(err)
+	}
+	//	getValues(true, dataPointer, fuelgauge.mbus)
 }
 
 /**
 Process form POST commands from the fuel gauge controller forms
 */
-func (this *FuelGauge) WebProcessHoldingRegistersForm(w http.ResponseWriter, r *http.Request) {
+func (fuelgauge *FuelGauge) WebProcessHoldingRegistersForm(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	var dataPointer *Data.Data
 	//	var holdingValues []uint16
 	//	var i int
 
 	slaveVal, _ := strconv.ParseUint(r.FormValue("slave"), 10, 16)
-	if uint8(slaveVal) == (this.FgLeft.SlaveAddress) {
-		dataPointer = this.FgLeft.ModbusData
+	if uint8(slaveVal) == (fuelgauge.FgLeft.SlaveAddress) {
+		dataPointer = fuelgauge.FgLeft.ModbusData
 	} else {
-		dataPointer = this.FgRight.ModbusData
+		dataPointer = fuelgauge.FgRight.ModbusData
 	}
 	if err != nil {
-		fmt.Fprint(w, `<html><head><title>Error</title></head><body><h1>`, err, `</h1></body></html>`)
+		_, err = fmt.Fprint(w, `<html><head><title>Error</title></head><body><h1>`, err, `</h1></body></html>`)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 	for sKey, sValue := range r.Form {
 		nValue, _ := strconv.ParseFloat(sValue[0], 32)
@@ -260,7 +267,7 @@ func (this *FuelGauge) WebProcessHoldingRegistersForm(w http.ResponseWriter, r *
 		for _, ep := range EndPoints {
 			if (ep.id == sKey) && (ep.dataType == HoldingRegister) {
 				//				log.Println("Holding ", ep.id, " set to ", nValue)
-				err = this.mbus.WriteHoldingRegister(uint16(ep.address), uint16(nValue), dataPointer.SlaveAddress)
+				err = fuelgauge.mbus.WriteHoldingRegister(ep.address, uint16(nValue), dataPointer.SlaveAddress)
 				if err != nil {
 					log.Println(err)
 					dataPointer.LastError = err.Error()
@@ -276,7 +283,7 @@ func (this *FuelGauge) WebProcessHoldingRegistersForm(w http.ResponseWriter, r *
 /**
 Get the values from the relevant fuel gauge controller
 */
-func (this *FuelGauge) getValues(bRefresh bool, lastValues *Data.Data, p *ModbusController.ModbusController) {
+func (fuelgauge *FuelGauge) getValues(lastValues *Data.Data, p *ModbusController.ModbusController) {
 	slaveID := lastValues.SlaveAddress
 	newValues := Data.New(lastValues.GetSpecs())
 	if len(newValues.Discrete) > 0 {
@@ -325,38 +332,41 @@ func (this *FuelGauge) getValues(bRefresh bool, lastValues *Data.Data, p *Modbus
 /**
 Set the charge level for the selected channel
 */
-func (this *FuelGauge) SetCharge(slave uint8, charge float32) {
-	this.mbus.WriteHoldingRegister(5, uint16(charge), slave)
+func (fuelgauge *FuelGauge) SetCharge(slave uint8, charge float32) {
+	err := fuelgauge.mbus.WriteHoldingRegister(5, uint16(charge), slave)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 /**
 Log the data read into the database
 */
-func (this *FuelGauge) logValues(current_0 uint16, current_1 uint16, charge_0 float32, charge_1 float32) {
-	i0 := int16(current_0)
-	i1 := int16(current_1)
-	c0 := charge_0
-	c1 := charge_1
+func (fuelgauge *FuelGauge) logValues(current0 uint16, current1 uint16, charge0 float32, charge1 float32) {
+	i0 := int16(current0)
+	i1 := int16(current1)
+	c0 := charge0
+	c1 := charge1
 
 	// Trim to capacity
-	if c0 > float32(this.FgLeft.Capacity) {
-		c0 = float32(this.FgLeft.Capacity)
+	if c0 > float32(fuelgauge.FgLeft.Capacity) {
+		c0 = float32(fuelgauge.FgLeft.Capacity)
 	} else if c0 < 0.1 {
 		c0 = 0.1
 	}
 
-	if c1 > float32(this.FgRight.Capacity) {
-		c1 = float32(this.FgRight.Capacity)
+	if c1 > float32(fuelgauge.FgRight.Capacity) {
+		c1 = float32(fuelgauge.FgRight.Capacity)
 	} else if c1 < 0.1 {
 		c1 = 0.1
 	}
 
-	_, err := this.currentStatement.Exec(float32(i0)/100.0, float32(i1)/100.0, c0, c1)
+	_, err := fuelgauge.currentStatement.Exec(float32(i0)/100.0, float32(i1)/100.0, c0, c1)
 	if err != nil {
 		log.Println(err)
 	}
 
-	delta := int(charge_0) - int(this.FgLeft.Coulombs)
+	delta := int(charge0) - int(fuelgauge.FgLeft.Coulombs)
 	// Take care of overflow of the coulomb counter
 	if delta > 65000 {
 		delta = delta - 65536
@@ -364,55 +374,61 @@ func (this *FuelGauge) logValues(current_0 uint16, current_1 uint16, charge_0 fl
 		delta = delta + 65536
 	}
 	if delta > 0 {
-		_, err = this.systemParamStatement.Exec(float64(delta)*this.FgLeft.Efficiency, "charge_in_counter_0")
+		_, err = fuelgauge.systemParamStatement.Exec(float64(delta)*fuelgauge.FgLeft.Efficiency, "charge_in_counter_0")
 		if err != nil {
 			log.Println("Adding charge to bank 0 - ", err)
 		}
 	} else if delta < 0 {
-		_, err = this.systemParamStatement.Exec(0-delta, "charge_out_counter_0")
+		_, err = fuelgauge.systemParamStatement.Exec(0-delta, "charge_out_counter_0")
 		if err != nil {
 			log.Println("Reducing charge to bank 0 - ", err)
 		}
-		if charge_0 > float32(this.FgLeft.Capacity) {
-			this.SetCharge(this.FgLeft.SlaveAddress, c0)
+		if charge0 > float32(fuelgauge.FgLeft.Capacity) {
+			fuelgauge.SetCharge(fuelgauge.FgLeft.SlaveAddress, c0)
 		}
 	}
-	if charge_0 != c0 {
+	if charge0 != c0 {
 		// Update the controller because we needed to correct the charge level
-		this.mbus.WriteHoldingRegister(CHARGE_REGISTER, uint16(c0*10.0), this.FgLeft.SlaveAddress)
-		charge_0 = c0
+		err := fuelgauge.mbus.WriteHoldingRegister(ChargeRegister, uint16(c0*10.0), fuelgauge.FgLeft.SlaveAddress)
+		if err != nil {
+			log.Println(err)
+		}
+		charge0 = c0
 	}
-	this.FgLeft.Coulombs = charge_0
-	delta = int(charge_1) - int(this.FgRight.Coulombs)
+	fuelgauge.FgLeft.Coulombs = charge0
+	delta = int(charge1) - int(fuelgauge.FgRight.Coulombs)
 	if delta > 0 {
-		_, err = this.systemParamStatement.Exec(float64(delta)*this.FgRight.Efficiency, "charge_in_counter_1")
+		_, err = fuelgauge.systemParamStatement.Exec(float64(delta)*fuelgauge.FgRight.Efficiency, "charge_in_counter_1")
 		if err != nil {
 			log.Println("Adding charge to bank 1 - ", err)
 		}
 	} else if delta < 0 {
-		_, err = this.systemParamStatement.Exec(0-delta, "charge_out_counter_1")
+		_, err = fuelgauge.systemParamStatement.Exec(0-delta, "charge_out_counter_1")
 		if err != nil {
 			log.Println("Reducing charge to bank 1 - ", err)
 		}
-		if charge_1 > float32(this.FgRight.Capacity) {
-			this.SetCharge(this.FgRight.SlaveAddress, c1)
+		if charge1 > float32(fuelgauge.FgRight.Capacity) {
+			fuelgauge.SetCharge(fuelgauge.FgRight.SlaveAddress, c1)
 		}
 	}
-	if charge_1 != c1 {
+	if charge1 != c1 {
 		// Update the controller because we needed to correct the charge level
-		this.mbus.WriteHoldingRegister(CHARGE_REGISTER, uint16(c1*10.0), this.FgRight.SlaveAddress)
-		charge_1 = c1
+		err = fuelgauge.mbus.WriteHoldingRegister(ChargeRegister, uint16(c1*10.0), fuelgauge.FgRight.SlaveAddress)
+		if err != nil {
+			log.Println(err)
+		}
+		charge1 = c1
 	}
-	this.FgRight.Coulombs = charge_1
+	fuelgauge.FgRight.Coulombs = charge1
 }
 
 /**
 Check that at least one battery is connected
 */
-func (this *FuelGauge) CheckBatteryConnectionState() {
-	if this.FgLeft.ModbusData.Discrete[LEFT_BANK_SENSE] && this.FgLeft.ModbusData.Discrete[RIGHT_BANK_SENSE] {
+func (fuelgauge *FuelGauge) CheckBatteryConnectionState() {
+	if fuelgauge.FgLeft.ModbusData.Discrete[LeftBankSense] && fuelgauge.FgLeft.ModbusData.Discrete[RightBankSense] {
 		// Both batteries appear to be switched off so we need to switch the left bank on.
-		this.PulseRelay(LEFT_BANK_ON_RELAY, this.FgLeft.SlaveAddress, 2)
+		fuelgauge.PulseRelay(LeftBankOnRelay, fuelgauge.FgLeft.SlaveAddress, 2)
 		log.Println("Turning on the left bank because both banks reported OFF")
 		// This should neve have happened so we should send an email warning that we had to do it.
 		err := smtp.SendMail("mail.cedartechnology.com:587",
@@ -430,21 +446,21 @@ Turned on the left bank because both banks were reporting OFF`))
 /**
 Read the fuel gauge values every second and update the database
 */
-func (this *FuelGauge) Run() {
+func (fuelgauge *FuelGauge) Run() {
 	reportTicker := time.NewTicker(time.Second)
 	defer reportTicker.Stop()
 	for {
 		select {
 		case <-reportTicker.C:
 			{
-				this.FgLeft.ModbusData.LastError = ""
-				this.getValues(false, this.FgLeft.ModbusData, this.mbus)
+				fuelgauge.FgLeft.ModbusData.LastError = ""
+				fuelgauge.getValues(fuelgauge.FgLeft.ModbusData, fuelgauge.mbus)
 
-				this.FgRight.ModbusData.LastError = ""
-				this.getValues(false, this.FgRight.ModbusData, this.mbus)
+				fuelgauge.FgRight.ModbusData.LastError = ""
+				fuelgauge.getValues(fuelgauge.FgRight.ModbusData, fuelgauge.mbus)
 
-				this.CheckBatteryConnectionState()
-				this.logValues(this.FgLeft.ModbusData.Input[7], this.FgRight.ModbusData.Input[7], float32(this.FgLeft.ModbusData.Holding[5])/10, float32(this.FgRight.ModbusData.Holding[5])/10)
+				fuelgauge.CheckBatteryConnectionState()
+				fuelgauge.logValues(fuelgauge.FgLeft.ModbusData.Input[7], fuelgauge.FgRight.ModbusData.Input[7], float32(fuelgauge.FgLeft.ModbusData.Holding[5])/10, float32(fuelgauge.FgRight.ModbusData.Holding[5])/10)
 			}
 		}
 	}
@@ -453,37 +469,37 @@ func (this *FuelGauge) Run() {
 /**
 Read the capacity and last full charge datetime vaules from the database
 */
-func (this *FuelGauge) ReadSystemParameters() {
-	row := this.pDB.QueryRow(`select date_value from system_parameters where name = 'bank0_full'`)
-	err := row.Scan(&this.FgLeft.LastFullCharge)
+func (fuelgauge *FuelGauge) ReadSystemParameters() {
+	row := fuelgauge.pDB.QueryRow(`select date_value from system_parameters where name = 'bank0_full'`)
+	err := row.Scan(&fuelgauge.FgLeft.LastFullCharge)
 	if err != nil {
 		log.Println("Error getting last full charge left from system parameters - ", err)
 	}
-	row = this.pDB.QueryRow(`select date_value from system_parameters where name = 'bank1_full'`)
-	err = row.Scan(&this.FgRight.LastFullCharge)
+	row = fuelgauge.pDB.QueryRow(`select date_value from system_parameters where name = 'bank1_full'`)
+	err = row.Scan(&fuelgauge.FgRight.LastFullCharge)
 	if err != nil {
 		log.Println("Error getting last full charge right from system parameters - ", err)
 	}
-	row = this.pDB.QueryRow(`select integer_value from system_parameters where name = 'capacity_0'`)
-	err = row.Scan(&this.FgLeft.Capacity)
+	row = fuelgauge.pDB.QueryRow(`select integer_value from system_parameters where name = 'capacity_0'`)
+	err = row.Scan(&fuelgauge.FgLeft.Capacity)
 	if err != nil {
 		log.Println("Error getting left bank capacity from system parameters - ", err)
 	}
-	row = this.pDB.QueryRow(`select integer_value from system_parameters where name = 'capacity_1'`)
-	err = row.Scan(&this.FgRight.Capacity)
+	row = fuelgauge.pDB.QueryRow(`select integer_value from system_parameters where name = 'capacity_1'`)
+	err = row.Scan(&fuelgauge.FgRight.Capacity)
 	if err != nil {
 		log.Println("Error getting right bank capacity from system parameters - ", err)
 	}
 }
 
-func (this *FuelGauge) setFullCharge(bank int) {
+func (fuelgauge *FuelGauge) setFullCharge(bank int) {
 	var sSQL string
 	if bank == 0 {
 		sSQL = `update system_parameters set integer_value = 1, date_value = now() where name = 'bank0_full' and integer_value = 0`
 	} else {
 		sSQL = `update system_parameters set integer_value = 1, date_value = now() where name = 'bank1_full' and integer_value = 0`
 	}
-	_, err := this.pDB.Exec(sSQL)
+	_, err := fuelgauge.pDB.Exec(sSQL)
 	if err != nil {
 		log.Println("Error trying to set the full charge flag for bank ", bank, " - ", err)
 	}
@@ -492,77 +508,77 @@ func (this *FuelGauge) setFullCharge(bank int) {
 /**
 Test the full charge state of the given battery.
 */
-func (this *FuelGauge) TestFullCharge(bank uint8) (full bool) {
+func (fuelgauge *FuelGauge) TestFullCharge(bank uint8) (full bool) {
 	switch bank {
 	case 0:
-		if this.FgLeft.Coulombs >= float32(this.FgLeft.Capacity) {
-			this.setFullCharge(0)
+		if fuelgauge.FgLeft.Coulombs >= float32(fuelgauge.FgLeft.Capacity) {
+			fuelgauge.setFullCharge(0)
 			return true
 		}
 	case 1:
-		if this.FgRight.Coulombs >= float32(this.FgRight.Capacity) {
-			this.setFullCharge(1)
+		if fuelgauge.FgRight.Coulombs >= float32(fuelgauge.FgRight.Capacity) {
+			fuelgauge.setFullCharge(1)
 			return true
 		}
 	}
 	return false
 }
 
-func (this *FuelGauge) GetLastFullChargeTimes() string {
+func (fuelgauge *FuelGauge) GetLastFullChargeTimes() string {
 	var rowData struct {
 		Bank0 string `json:"bank_0"`
 		Bank1 string `json:"bank_1"`
 	}
 
-	rowData.Bank0 = this.FgLeft.LastFullCharge.Time.Format(``)
-	rowData.Bank1 = this.FgRight.LastFullCharge.Time.Format(``)
+	rowData.Bank0 = fuelgauge.FgLeft.LastFullCharge.Time.Format(``)
+	rowData.Bank1 = fuelgauge.FgRight.LastFullCharge.Time.Format(``)
 
 	jsonString, _ := json.Marshal(rowData)
 	return string(jsonString)
 }
 
-func (this *FuelGauge) ReadyToWater(bank int16) bool {
+func (fuelgauge *FuelGauge) ReadyToWater(bank int16) bool {
 	var percentCharged float32 = 0.0
 	switch bank {
 	case 0:
-		percentCharged = (this.FgLeft.Coulombs / float32(this.FgLeft.Capacity)) * 100.0
+		percentCharged = (fuelgauge.FgLeft.Coulombs / float32(fuelgauge.FgLeft.Capacity)) * 100.0
 	case 1:
-		percentCharged = (this.FgRight.Coulombs / float32(this.FgRight.Capacity)) * 100.0
+		percentCharged = (fuelgauge.FgRight.Coulombs / float32(fuelgauge.FgRight.Capacity)) * 100.0
 	}
-	return percentCharged > WATER_CHARGE_THRESHOLD
+	return percentCharged > WATERCHARGETHRESHOLD
 }
 
-func (this *FuelGauge) GetCapacity() string {
+func (fuelgauge *FuelGauge) GetCapacity() string {
 	var rowData struct {
 		Capacity0 int16 `json:"bank_0"`
 		Capacity1 int16 `json:"bank_1"`
 	}
 
-	rowData.Capacity0 = this.FgLeft.Capacity
-	rowData.Capacity1 = this.FgRight.Capacity
+	rowData.Capacity0 = fuelgauge.FgLeft.Capacity
+	rowData.Capacity1 = fuelgauge.FgRight.Capacity
 
 	jsonString, _ := json.Marshal(rowData)
 	return string(jsonString)
 }
 
-func (this *FuelGauge) Capacity() (total int16, left int16, right int16) {
-	return this.FgLeft.Capacity + this.FgRight.Capacity, this.FgLeft.Capacity, this.FgRight.Capacity
+func (fuelgauge *FuelGauge) Capacity() (total int16, left int16, right int16) {
+	return fuelgauge.FgLeft.Capacity + fuelgauge.FgRight.Capacity, fuelgauge.FgLeft.Capacity, fuelgauge.FgRight.Capacity
 }
 
 /**
 Pulse the selected relay on the given slave for the given time duration
 */
-func (this *FuelGauge) PulseRelay(relay uint16, slave uint8, seconds uint8) {
+func (fuelgauge *FuelGauge) PulseRelay(relay uint16, slave uint8, seconds uint8) {
 	// Turn the relay on
 	log.Println("Pulse - turning relay ", relay, " on.")
-	err := this.mbus.WriteCoil(relay, true, slave)
+	err := fuelgauge.mbus.WriteCoil(relay, true, slave)
 	if err != nil {
 		log.Println("Failed to turn on relay ", relay, " - ", err)
 	}
 	// Turn it off again after the delay period
 	time.AfterFunc(time.Duration(seconds)*time.Second, func() {
 		log.Println("Pulse - turning relay ", relay, " off again.")
-		err = this.mbus.WriteCoil(relay, false, slave)
+		err = fuelgauge.mbus.WriteCoil(relay, false, slave)
 		if err != nil {
 			log.Println("Failed to turn off relay ", relay, " - ", err)
 		}
@@ -575,7 +591,7 @@ This is called when one bank reaches full charge to switch to the other bank.
 It should also be called at 7PM to switch to the left bank in case we are still on the right.
 This is done while the right bank cells are causing issues.
 */
-func (this *FuelGauge) SwitchOffBank(bank int) {
+func (fuelgauge *FuelGauge) SwitchOffBank(bank int) {
 	var (
 		onRelay           uint16
 		offRelay          uint16
@@ -585,32 +601,32 @@ func (this *FuelGauge) SwitchOffBank(bank int) {
 
 	//	log.Println("Switching off bank ", bank)
 
-	if bank == LEFT_BANK {
-		onRelay = RIGHT_BANK_ON_RELAY        // Right bank on
-		offRelay = LEFT_BANK_OFF_RELAY       // Left bank off
-		thisBatterySense = LEFT_BANK_SENSE   // Sense input for the selected bank
-		otherBatterySense = RIGHT_BANK_SENSE // Right bank sense
+	if bank == LeftBank {
+		onRelay = RightBankOnRelay         // Right bank on
+		offRelay = LeftBankOffRelay        // Left bank off
+		thisBatterySense = LeftBankSense   // Sense input for the selected bank
+		otherBatterySense = RightBankSense // Right bank sense
 	} else {
-		onRelay = LEFT_BANK_ON_RELAY        // Left bank on
-		offRelay = RIGHT_BANK_OFF_RELAY     // Right bank off
-		thisBatterySense = RIGHT_BANK_SENSE // Sense input for the selected bank
-		otherBatterySense = LEFT_BANK_SENSE // Left bank sense
+		onRelay = LeftBankOnRelay         // Left bank on
+		offRelay = RightBankOffRelay      // Right bank off
+		thisBatterySense = RightBankSense // Sense input for the selected bank
+		otherBatterySense = LeftBankSense // Left bank sense
 	}
 
 	// If the bank is already switched off then do nothing and return
-	if this.FgLeft.ModbusData.Discrete[thisBatterySense] {
+	if fuelgauge.FgLeft.ModbusData.Discrete[thisBatterySense] {
 		return
 	}
 
-	if this.FgLeft.ModbusData.Discrete[otherBatterySense] {
+	if fuelgauge.FgLeft.ModbusData.Discrete[otherBatterySense] {
 		// Activate the relay to switch on the other battery if it is switched off so there is always one active bank
-		this.PulseRelay(onRelay, this.FgLeft.SlaveAddress, 2)
+		fuelgauge.PulseRelay(onRelay, fuelgauge.FgLeft.SlaveAddress, 2)
 		log.Println("OtherBatterySense (", otherBatterySense, ") shows TRUE so attempting to turn on bank by pulsing relay ", onRelay)
 		time.Sleep(time.Second * 15)
 		// Now switch the selected battery off giving 15 seconds for the switching capacitor to discharge properly
 
-		if !this.FgLeft.ModbusData.Discrete[otherBatterySense] {
-			this.PulseRelay(offRelay, this.FgLeft.SlaveAddress, 2)
+		if !fuelgauge.FgLeft.ModbusData.Discrete[otherBatterySense] {
+			fuelgauge.PulseRelay(offRelay, fuelgauge.FgLeft.SlaveAddress, 2)
 		} else {
 			log.Println("Attempt to turn on the other bank Failed. Cannot turn off bank ", bank)
 			err := smtp.SendMail("mail.cedartechnology.com:587",
@@ -625,19 +641,19 @@ Attempted to turn on a bank so the other bank can be turned off but the turn on 
 		}
 	} else {
 		// The other battery is already on so just turn ours off Activate the relay to switch off the selected battery
-		this.PulseRelay(offRelay, this.FgLeft.SlaveAddress, 2)
+		fuelgauge.PulseRelay(offRelay, fuelgauge.FgLeft.SlaveAddress, 2)
 	}
 }
 
 /**
 Return the JSON representation of the data read from the controllers
 */
-func (this *FuelGauge) GetData() (string, error) {
-	bytesLeftJSON, err := json.Marshal(this.FgLeft)
+func (fuelgauge *FuelGauge) GetData() (string, error) {
+	bytesLeftJSON, err := json.Marshal(fuelgauge.FgLeft)
 	if err != nil {
 		return "", err
 	}
-	bytesRightJSON, err := json.Marshal(this.FgRight)
+	bytesRightJSON, err := json.Marshal(fuelgauge.FgRight)
 	if err != nil {
 		return "", err
 	}
@@ -647,17 +663,21 @@ func (this *FuelGauge) GetData() (string, error) {
 /**
 Draw the modbus coils, and registers table for display of data from one fuel gauge controller
 */
-func (this *FuelGauge) drawTable(w http.ResponseWriter, slave uint8, SlaveEndPoints []ModbusEndPoint) {
+func (fuelgauge *FuelGauge) drawTable(w http.ResponseWriter, slave uint8, SlaveEndPoints []ModbusEndPoint) {
 	var bClosed bool
 	var onClick string
 	var labelClass string
 	var readOnly string
 	var name string
 	nIndex := 0
+	var err error
 
 	for _, ep := range SlaveEndPoints {
 		if (nIndex % 4) == 0 {
-			fmt.Fprint(w, `<tr>`)
+			_, err = fmt.Fprint(w, `<tr>`)
+			if err != nil {
+				log.Println(err)
+			}
 			bClosed = false
 		}
 		if ep.writeable {
@@ -672,35 +692,45 @@ func (this *FuelGauge) drawTable(w http.ResponseWriter, slave uint8, SlaveEndPoi
 			name = ``
 
 		}
+		err = nil
 		switch ep.dataType {
 		case Coil:
-			fmt.Fprint(w, `<td class="coil" `, onClick, `><span class="coilOff" id="c`, slave, `:`, ep.id, `">`, ep.name, `</span></td>`)
+			_, err = fmt.Fprint(w, `<td class="coil" `, onClick, `><span class="coilOff" id="c`, slave, `:`, ep.id, `">`, ep.name, `</span></td>`)
 		case Discrete:
-			fmt.Fprint(w, `<td class="discrete"><span class="discreteOff" id="d`, slave, `:`, ep.id, `">`, ep.name, `</span></td>`)
+			_, err = fmt.Fprint(w, `<td class="discrete"><span class="discreteOff" id="d`, slave, `:`, ep.id, `">`, ep.name, `</span></td>`)
 		case HoldingRegister:
-			fmt.Fprint(w, `<td class="holdingRegister"><label for="h`, slave, ":", ep.id, `" `, labelClass, `>`, ep.name, `</label><input class="holdingRegister" type="text"`, name, ` id="h`, slave, ":", ep.id, `" multiplier="`, ep.multiplier, `" signed="`, ep.signed, `" value="" `, readOnly, `></td>`)
+			_, err = fmt.Fprint(w, `<td class="holdingRegister"><label for="h`, slave, ":", ep.id, `" `, labelClass, `>`, ep.name, `</label><input class="holdingRegister" type="text"`, name, ` id="h`, slave, ":", ep.id, `" multiplier="`, ep.multiplier, `" signed="`, ep.signed, `" value="" `, readOnly, `></td>`)
 		case InputRegister:
-			fmt.Fprint(w, `<td class="inputRegister"><label for="i`, slave, ":", ep.id, `">`, ep.name, `</label `, labelClass, `><input class="inputRegister" type="text" id="i`, slave, ":", ep.id, `" multiplier="`, ep.multiplier, `" signed="`, ep.signed, `" value="" readonly></td>`)
+			_, err = fmt.Fprint(w, `<td class="inputRegister"><label for="i`, slave, ":", ep.id, `">`, ep.name, `</label `, labelClass, `><input class="inputRegister" type="text" id="i`, slave, ":", ep.id, `" multiplier="`, ep.multiplier, `" signed="`, ep.signed, `" value="" readonly></td>`)
 		case Blank:
-			fmt.Fprint(w, `<td>&nbsp;</td>`)
+			_, err = fmt.Fprint(w, `<td>&nbsp;</td>`)
+		}
+		if err != nil {
+			log.Println(err)
 		}
 		nIndex++
 		if (nIndex % 4) == 0 {
-			fmt.Fprint(w, `</tr>`)
+			_, err = fmt.Fprint(w, `</tr>`)
+			if err != nil {
+				log.Println(err)
+			}
 			bClosed = true
 		}
 	}
 	if !bClosed {
-		fmt.Fprint(w, "</tr>")
+		_, err = fmt.Fprint(w, "</tr>")
+		if err != nil {
+			log.Println(err)
+		}
 	}
 }
 
 /**
 Render the WEB page for the fuel gauge controllers
 */
-func (this *FuelGauge) WebGetValues(w http.ResponseWriter, _ *http.Request) {
+func (fuelgauge *FuelGauge) WebGetValues(w http.ResponseWriter, _ *http.Request) {
 
-	fmt.Fprint(w, `<html>
+	_, err := fmt.Fprint(w, `<html>
   <head>
     <link rel="shortcut icon" href="">
     <title>Battery Fuel Gauge</title>
@@ -858,60 +888,94 @@ func (this *FuelGauge) WebGetValues(w http.ResponseWriter, _ *http.Request) {
 			xhr.send(frmDta);
 		}
 		function clearErrors() {
-			document.getElementById("error`, this.FgLeft.SlaveAddress, `").innerText = "";`)
-	if this.FgLeft.SlaveAddress != 0 {
-		fmt.Fprint(w, `			document.getElementById("error`, this.FgLeft.SlaveAddress, `").innerText = "";`)
+			document.getElementById("error`, fuelgauge.FgLeft.SlaveAddress, `").innerText = "";`)
+	if err != nil {
+		log.Println(err)
+		return
 	}
-	fmt.Fprint(w, `	}
+	if fuelgauge.FgLeft.SlaveAddress != 0 {
+		_, err = fmt.Fprint(w, `			document.getElementById("error`, fuelgauge.FgLeft.SlaveAddress, `").innerText = "";`)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
+	_, err = fmt.Fprint(w, `	}
 	</script>
   </head>
   <body>
 	<h1>Battery Management</h1>
-    <h2>Connected on `, this.commsPort, ` at `, this.baudRate, ` baud</h2>
+    <h2>Connected on `, fuelgauge.commsPort, ` at `, fuelgauge.baudRate, ` baud</h2>
     <div id="leftBattery">
       <form onsubmit="return false;" id="modbus1Form">
-		<input type="hidden" name="slave" value="`, this.FgLeft.SlaveAddress, `">
+		<input type="hidden" name="slave" value="`, fuelgauge.FgLeft.SlaveAddress, `">
         <table class="pumps"><tr><td colspan=2 style="text-align:center">---Key---</td><td class="coilOn">===ON===</td><td class="coilOff">===OFF===</td></tr>`)
-	this.drawTable(w, this.FgLeft.SlaveAddress, EndPoints)
-	fmt.Fprint(w, `
-        </table>
-        <br /><button class="frmSubmit" type="text" onclick="sendFormData('modbus1Form', 'setHoldingRegisters')">Submit</button>&nbsp;<span id="error`, this.FgLeft.SlaveAddress, `"></span>
-      </form>
-    </div>`)
-	if this.FgRight.SlaveAddress != 0 {
-		fmt.Fprint(w, ` <div id="rightBattery">
-      <form onsubmit="return false;" id="modbus2Form">
-		<input type="hidden" name="slave" value="`, this.FgRight.SlaveAddress, `">
-        <table class="pumps"><tr><td colspan=2 style="text-align:center">---Key---</td><td class="coilOn">===ON===</td><td class="coilOff">===OFF===</td></tr>`)
-		this.drawTable(w, this.FgRight.SlaveAddress, EndPoints)
-		fmt.Fprint(w, `
-        </table>
-        <br /><button class="frmSubmit" type="text" onclick="sendFormData('modbus2Form', 'setHoldingRegisters')">Submit</button>&nbsp;<span id="error`, this.FgRight.SlaveAddress, `"></span>
-      </form>
-    </div>`)
+	fuelgauge.drawTable(w, fuelgauge.FgLeft.SlaveAddress, EndPoints)
+	if err != nil {
+		log.Println(err)
+		return
 	}
-	fmt.Fprint(w, `
+
+	_, err = fmt.Fprint(w, `
+        </table>
+        <br /><button class="frmSubmit" type="text" onclick="sendFormData('modbus1Form', 'setHoldingRegisters')">Submit</button>&nbsp;<span id="error`, fuelgauge.FgLeft.SlaveAddress, `"></span>
+      </form>
+    </div>`)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	if fuelgauge.FgRight.SlaveAddress != 0 {
+		_, err = fmt.Fprint(w, ` <div id="rightBattery">
+      <form onsubmit="return false;" id="modbus2Form">
+		<input type="hidden" name="slave" value="`, fuelgauge.FgRight.SlaveAddress, `">
+        <table class="pumps"><tr><td colspan=2 style="text-align:center">---Key---</td><td class="coilOn">===ON===</td><td class="coilOff">===OFF===</td></tr>`)
+		fuelgauge.drawTable(w, fuelgauge.FgRight.SlaveAddress, EndPoints)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+		_, err = fmt.Fprint(w, `
+        </table>
+        <br /><button class="frmSubmit" type="text" onclick="sendFormData('modbus2Form', 'setHoldingRegisters')">Submit</button>&nbsp;<span id="error`, fuelgauge.FgRight.SlaveAddress, `"></span>
+      </form>
+    </div>`)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+	}
+	_, err = fmt.Fprint(w, `
     <div>
       <button class="frmSubmit" type="text" onclick="clearErrors();">Clear Errors</button>
     </div>
   </body>
 </html>`)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 /**
 Perform the bank watering function. Turn on the relevant valve for the requested time in minutes.
 */
-func (this *FuelGauge) WaterBank(bank uint8, timer uint8) error {
+func (fuelgauge *FuelGauge) WaterBank(bank uint8, timer uint8) error {
 	var relay uint16
 	// Solenoids are on coils 6 & 8 of the right bank controller.
-	if bank == LEFT_BANK {
-		relay = LEFT_WATER_RELAY
+	if bank == LeftBank {
+		relay = LeftWaterRelay
 	} else {
-		relay = RIGHT_WATER_RELAY
+		relay = RightWaterRelay
 	}
-	err := this.mbus.WriteCoil(relay, true, this.FgRight.SlaveAddress)
+	err := fuelgauge.mbus.WriteCoil(relay, true, fuelgauge.FgRight.SlaveAddress)
 	if err == nil {
-		time.AfterFunc(time.Duration(timer)*time.Minute, func() { this.mbus.WriteCoil(relay, false, this.FgRight.SlaveAddress) })
+		time.AfterFunc(time.Duration(timer)*time.Minute, func() {
+			err := fuelgauge.mbus.WriteCoil(relay, false, fuelgauge.FgRight.SlaveAddress)
+			if err != nil {
+				log.Println(err)
+				return
+			}
+		})
 	} else {
 		return err
 	}
@@ -922,7 +986,7 @@ func (this *FuelGauge) WaterBank(bank uint8, timer uint8) error {
 Turn on the watering system for the bank for the minutes.
 Send PATCH to URL: /waterBank/{bank}/{minutes}
 */
-func (this *FuelGauge) WebWaterBank(w http.ResponseWriter, r *http.Request) {
+func (fuelgauge *FuelGauge) WebWaterBank(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	bank, err := strconv.ParseUint(vars["bank"], 10, 8)
 	if (err != nil) || (bank > 1) {
@@ -935,7 +999,7 @@ func (this *FuelGauge) WebWaterBank(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = this.WaterBank(uint8(bank), uint8(timer))
+	err = fuelgauge.WaterBank(uint8(bank), uint8(timer))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -944,9 +1008,9 @@ func (this *FuelGauge) WebWaterBank(w http.ResponseWriter, r *http.Request) {
 /**
 Turn on the fan if it is off
 */
-func (this *FuelGauge) TurnOnFan() {
-	if !this.FgLeft.ModbusData.Coil[BATTERY_FAN_RELAY-1] {
-		err := this.mbus.WriteCoil(BATTERY_FAN_RELAY, true, this.FgLeft.SlaveAddress)
+func (fuelgauge *FuelGauge) TurnOnFan() {
+	if !fuelgauge.FgLeft.ModbusData.Coil[BatteryFanRelay-1] {
+		err := fuelgauge.mbus.WriteCoil(BatteryFanRelay, true, fuelgauge.FgLeft.SlaveAddress)
 		if err != nil {
 			log.Println("Failed to turn the battery fan on", err)
 		}
@@ -956,9 +1020,9 @@ func (this *FuelGauge) TurnOnFan() {
 /**
 Turn off the fan if it is on
 */
-func (this *FuelGauge) TurnOffFan() {
-	if this.FgLeft.ModbusData.Coil[BATTERY_FAN_RELAY-1] {
-		err := this.mbus.WriteCoil(BATTERY_FAN_RELAY, false, this.FgLeft.SlaveAddress)
+func (fuelgauge *FuelGauge) TurnOffFan() {
+	if fuelgauge.FgLeft.ModbusData.Coil[BatteryFanRelay-1] {
+		err := fuelgauge.mbus.WriteCoil(BatteryFanRelay, false, fuelgauge.FgLeft.SlaveAddress)
 		if err != nil {
 			log.Println("Failed to turn the battery fan off", err)
 		}
@@ -969,7 +1033,7 @@ func (this *FuelGauge) TurnOffFan() {
 Turn on or off the battery house ventilation fan for the minutes.
 Send PATCH to URL: /batteryFan/{onOff}
 */
-func (this *FuelGauge) WebBatteryFan(w http.ResponseWriter, r *http.Request) {
+func (fuelgauge *FuelGauge) WebBatteryFan(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var OnOff bool
 
@@ -982,7 +1046,7 @@ func (this *FuelGauge) WebBatteryFan(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Fan relay is on coil 8 of the left bank controller
-	err := this.mbus.WriteCoil(BATTERY_FAN_RELAY, OnOff, this.FgLeft.SlaveAddress)
+	err := fuelgauge.mbus.WriteCoil(BatteryFanRelay, OnOff, fuelgauge.FgLeft.SlaveAddress)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -998,7 +1062,7 @@ Left controller Relay 2 = Off for the left bank
 Left controller Relay 3 = On for the right bank
 Left controller Relay 4 = Off for the right bank
 */
-func (this *FuelGauge) WebSwitchBattery(w http.ResponseWriter, r *http.Request) {
+func (fuelgauge *FuelGauge) WebSwitchBattery(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	var OnOff bool
 
@@ -1015,25 +1079,25 @@ func (this *FuelGauge) WebSwitchBattery(w http.ResponseWriter, r *http.Request) 
 	switch vars["bank"] {
 	case "0":
 		if OnOff {
-			relay = LEFT_BANK_ON_RELAY
+			relay = LeftBankOnRelay
 		} else {
 			// If the right battery is off (discrete input 8 = 1) DO NOT turn the left bank off
-			if this.FgLeft.ModbusData.Discrete[RIGHT_BANK_SENSE] {
+			if fuelgauge.FgLeft.ModbusData.Discrete[RightBankSense] {
 				http.Error(w, "Cannot turn both batteries off.", http.StatusBadRequest)
 				return
 			}
-			relay = LEFT_BANK_OFF_RELAY
+			relay = LeftBankOffRelay
 		}
 	case "1":
 		if OnOff {
-			relay = RIGHT_BANK_ON_RELAY
+			relay = RightBankOnRelay
 		} else {
 			// If the left battery is off (discrete input 8 = 1) DO NOT turn the left bank off
-			if this.FgLeft.ModbusData.Discrete[LEFT_BANK_SENSE] {
+			if fuelgauge.FgLeft.ModbusData.Discrete[LeftBankSense] {
 				http.Error(w, "Cannot turn both batteries off.", http.StatusBadRequest)
 				return
 			}
-			relay = RIGHT_BANK_OFF_RELAY
+			relay = RightBankOffRelay
 		}
 	default:
 		http.Error(w, "bank 0(left) or 1(right) expected", http.StatusBadRequest)
@@ -1041,13 +1105,13 @@ func (this *FuelGauge) WebSwitchBattery(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Activate the relay to switch the battery
-	err := this.mbus.WriteCoil(relay, true, this.FgLeft.SlaveAddress)
+	err := fuelgauge.mbus.WriteCoil(relay, true, fuelgauge.FgLeft.SlaveAddress)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	time.Sleep(time.Second * 2)
-	err = this.mbus.WriteCoil(relay, false, this.FgLeft.SlaveAddress)
+	err = fuelgauge.mbus.WriteCoil(relay, false, fuelgauge.FgLeft.SlaveAddress)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
@@ -1057,10 +1121,13 @@ func (this *FuelGauge) WebSwitchBattery(w http.ResponseWriter, r *http.Request) 
 /**
 Get the charging efficiences from the system parameters
 */
-func (this *FuelGauge) getChargingEfficiencies(db *sql.DB) error {
+func (fuelgauge *FuelGauge) getChargingEfficiencies(db *sql.DB) error {
 	rows, err := db.Query("select name, double_value from system_parameters where name like 'charge__efficiency' order by name")
 	if err != nil {
-		db.Close()
+		closeErr := db.Close()
+		if closeErr != nil {
+			log.Println(closeErr)
+		}
 		return err
 	} else {
 		for rows.Next() {
@@ -1068,16 +1135,22 @@ func (this *FuelGauge) getChargingEfficiencies(db *sql.DB) error {
 			var efficiency float64
 			err = rows.Scan(&name, &efficiency)
 			if err != nil {
-				db.Close()
+				closeErr := db.Close()
+				if closeErr != nil {
+					log.Println(closeErr)
+				}
 				return err
 			}
 			if name == "charge0_efficiency" {
-				this.FgLeft.Efficiency = efficiency
+				fuelgauge.FgLeft.Efficiency = efficiency
 			} else if name == "charge1_efficiency" {
-				this.FgRight.Efficiency = efficiency
+				fuelgauge.FgRight.Efficiency = efficiency
 			} else {
-				db.Close()
-				return errors.New("Unknown entry in system parameters found matching query 'charge__efficiency'")
+				closeErr := db.Close()
+				if closeErr != nil {
+					log.Println(closeErr)
+				}
+				return errors.New("unknown entry in system parameters found matching query 'charge__efficiency'")
 			}
 		}
 	}
@@ -1157,18 +1230,18 @@ func New(commsPort string, baudRate int, dataBits int, stopBits int, parity stri
 	return this
 }
 
-func (this *FuelGauge) StateOfCharge() float32 {
-	return ((this.FgLeft.Coulombs + this.FgRight.Coulombs) * 100) / float32((this.FgLeft.Capacity + this.FgRight.Capacity))
+func (fuelgauge *FuelGauge) StateOfCharge() float32 {
+	return ((fuelgauge.FgLeft.Coulombs + fuelgauge.FgRight.Coulombs) * 100) / float32(fuelgauge.FgLeft.Capacity+fuelgauge.FgRight.Capacity)
 }
 
-func (this *FuelGauge) StateOfChargeLeft() float32 {
-	return ((this.FgLeft.Coulombs) * 100) / float32((this.FgLeft.Capacity))
+func (fuelgauge *FuelGauge) StateOfChargeLeft() float32 {
+	return ((fuelgauge.FgLeft.Coulombs) * 100) / float32(fuelgauge.FgLeft.Capacity)
 }
 
-func (this *FuelGauge) StateOfChargeRight() float32 {
-	return ((this.FgRight.Coulombs) * 100) / float32((this.FgRight.Capacity))
+func (fuelgauge *FuelGauge) StateOfChargeRight() float32 {
+	return ((fuelgauge.FgRight.Coulombs) * 100) / float32(fuelgauge.FgRight.Capacity)
 }
 
-func (this *FuelGauge) Current() float32 {
-	return float32((int16(this.FgLeft.ModbusData.Input[AVG_CURRENT-1]) + int16(this.FgRight.ModbusData.Input[AVG_CURRENT-1]))) / 100.0
+func (fuelgauge *FuelGauge) Current() float32 {
+	return float32(int16(fuelgauge.FgLeft.ModbusData.Input[AvgCurrent-1])+int16(fuelgauge.FgRight.ModbusData.Input[AvgCurrent-1])) / 100.0
 }

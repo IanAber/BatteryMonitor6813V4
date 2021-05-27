@@ -51,52 +51,52 @@ func New(pDB *sql.DB) (*FullChargeEval, error) {
 	return fce, nil
 }
 
-func (this *FullChargeEval) loadFullFlags() error {
-	row := this.systemParamsSQL.QueryRow("full_charge_min_rows")
-	err := row.Scan(&this.minRows)
+func (fullChargeEvaluator *FullChargeEval) loadFullFlags() error {
+	row := fullChargeEvaluator.systemParamsSQL.QueryRow("full_charge_min_rows")
+	err := row.Scan(&fullChargeEvaluator.minRows)
 	if err != nil {
 		log.Println("Failed to get full_charge_min_rows from system_parameters.", err)
 		return err
 	}
 
-	row = this.systemParamsSQL.QueryRow("full_charge_scan_mins")
-	err = row.Scan(&this.span)
+	row = fullChargeEvaluator.systemParamsSQL.QueryRow("full_charge_scan_mins")
+	err = row.Scan(&fullChargeEvaluator.span)
 	if err != nil {
 		log.Println("Failed to get full_charge_scan_mins from system_parameters.", err)
 		return err
 	}
 
-	row = this.systemParamsSQL.QueryRow("full_charge_threshold")
-	err = row.Scan(&this.threshold)
+	row = fullChargeEvaluator.systemParamsSQL.QueryRow("full_charge_threshold")
+	err = row.Scan(&fullChargeEvaluator.threshold)
 	if err != nil {
 		log.Println("Failed to get full_charge_threshold from system_parameters.", err)
 		return err
 	}
 
-	rows, err := this.checkFullSQL.Query()
+	rows, err := fullChargeEvaluator.checkFullSQL.Query()
 	if err != nil {
 		log.Println("Failed to get the current full cell status.", err)
 		return err
 	}
-	var cell_number uint8
-	var full_charge bool
+	var cellNumber uint8
+	var fullCharge bool
 	for rows.Next() {
-		if err = rows.Scan(&cell_number, &full_charge); err != nil {
+		if err = rows.Scan(&cellNumber, &fullCharge); err != nil {
 			log.Println("Error getting full charge rows. ", err)
 			return err
 		}
-		if cell_number < 100 {
-			this.fullFlags[0][cell_number-1] = full_charge
+		if cellNumber < 100 {
+			fullChargeEvaluator.fullFlags[0][cellNumber-1] = fullCharge
 		} else {
-			this.fullFlags[1][cell_number-101] = full_charge
+			fullChargeEvaluator.fullFlags[1][cellNumber-101] = fullCharge
 		}
 	}
 	return nil
 }
 
-func (this *FullChargeEval) loadTemporaryTable(when time.Time, span int, bank uint8) (rows int64, err error) {
+func (fullChargeEvaluator *FullChargeEval) loadTemporaryTable(when time.Time, span int, bank uint8) (rows int64, err error) {
 	rows = 0
-	row := this.loadDataSQL.QueryRow(when, span, bank)
+	row := fullChargeEvaluator.loadDataSQL.QueryRow(when, span, bank)
 	err = row.Scan(&rows)
 	if err != nil {
 		log.Println("Error getting row count for temporary table -", err)
@@ -104,10 +104,10 @@ func (this *FullChargeEval) loadTemporaryTable(when time.Time, span int, bank ui
 	return
 }
 
-func (this *FullChargeEval) getFullChargeState(cell int, threshold float64) (bool, error) {
+func (fullChargeEvaluator *FullChargeEval) getFullChargeState(cell int, threshold float64) (bool, error) {
 	var slope sql.NullFloat64
 
-	res := this.getSlopeSQL.QueryRow(cell)
+	res := fullChargeEvaluator.getSlopeSQL.QueryRow(cell)
 	err := res.Scan(&slope)
 	//	log.Println("Cell ", cell, " slope = ", slope, " threshold = ", threshold)
 	if slope.Valid {
@@ -117,35 +117,35 @@ func (this *FullChargeEval) getFullChargeState(cell int, threshold float64) (boo
 	}
 }
 
-func (this *FullChargeEval) setFullChargeState(state bool, when time.Time, cell int) (err error) {
-	_, err = this.setFullChargeSQL.Exec(state, when, cell)
+func (fullChargeEvaluator *FullChargeEval) setFullChargeState(state bool, when time.Time, cell int) (err error) {
+	_, err = fullChargeEvaluator.setFullChargeSQL.Exec(state, when, cell)
 	return
 }
 
-func (this *FullChargeEval) ProcessFullCharge(when time.Time) error {
-	err := this.loadFullFlags()
+func (fullChargeEvaluator *FullChargeEval) ProcessFullCharge(when time.Time) error {
+	err := fullChargeEvaluator.loadFullFlags()
 	if err != nil {
 		log.Println(err)
 		return err
 	}
-	for bank := range this.fullFlags {
-		rows, err := this.loadTemporaryTable(when, this.span, uint8(bank))
+	for bank := range fullChargeEvaluator.fullFlags {
+		rows, err := fullChargeEvaluator.loadTemporaryTable(when, fullChargeEvaluator.span, uint8(bank))
 		if err != nil {
 			log.Println("Error getting the data to process -", err)
 			return err
 		}
-		if rows >= this.minRows {
+		if rows >= fullChargeEvaluator.minRows {
 			//			fmt.Println(rows, "rows read for bank", bank)
-			for cell, flag := range this.fullFlags[bank] {
+			for cell, flag := range fullChargeEvaluator.fullFlags[bank] {
 				if !flag {
-					full, err := this.getFullChargeState(cell+1, this.threshold)
+					full, err := fullChargeEvaluator.getFullChargeState(cell+1, fullChargeEvaluator.threshold)
 					if err != nil {
 						log.Println("Failed to get the cell state for cell ", cell+1, " - ", err)
 						return err
 					}
-					this.fullFlags[bank][cell] = full
+					fullChargeEvaluator.fullFlags[bank][cell] = full
 					if full {
-						err := this.setFullChargeState(true, when, cell+1)
+						err := fullChargeEvaluator.setFullChargeState(true, when, cell+1)
 						if err != nil {
 							log.Println("Failed to set the cell", cell, "to full charge", err)
 							return err
