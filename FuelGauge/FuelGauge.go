@@ -18,20 +18,20 @@ import (
 )
 
 type fuelGaugeChannel struct {
-	Coulombs    	 float32
-	Efficiency  	 float64
-	ModbusData  	 *Data.Data
-	SlaveAddress	uint8
-	LastUpdate   	time.Time
-	Capacity	 	int16
-	LastFullCharge	mysql.NullTime
+	Coulombs       float32
+	Efficiency     float64
+	ModbusData     *Data.Data
+	SlaveAddress   uint8
+	LastUpdate     time.Time
+	Capacity       int16
+	LastFullCharge mysql.NullTime
 }
 
 type batterySettings struct {
-	CapacityLeft	float32
-	CapacityRight	float32
-	LastFullChargeLeft	mysql.NullTime
-	LastFullChargeRight	mysql.NullTime
+	CapacityLeft        float32
+	CapacityRight       float32
+	LastFullChargeLeft  mysql.NullTime
+	LastFullChargeRight mysql.NullTime
 }
 
 type FuelGauge struct {
@@ -40,7 +40,7 @@ type FuelGauge struct {
 	FgRight              fuelGaugeChannel
 	currentStatement     *sql.Stmt
 	systemParamStatement *sql.Stmt
-	fullChargeStatement	 *sql.Stmt
+	fullChargeStatement  *sql.Stmt
 	pDB                  *sql.DB
 	baudRate             int
 	commsPort            string
@@ -79,76 +79,76 @@ type RegisterRequest struct {
 	Value int16  `json:"value"`
 }
 
-const WATER_CHARGE_THRESHOLD	= 98.0		// The state of charge point reached at which the watering system is turned on.
-const LEFT_BANK				= 0
-const RIGHT_BANK			= 1
-const LEFT_BANK_CELL_COUNT	= 37
-const RIGHT_BANK_CELL_COUNT	= 38
+const WATER_CHARGE_THRESHOLD = 98.0 // The state of charge point reached at which the watering system is turned on.
+const LEFT_BANK = 0
+const RIGHT_BANK = 1
+const LEFT_BANK_CELL_COUNT = 37
+const RIGHT_BANK_CELL_COUNT = 38
 
 // Digital Inputs
-const LEFT_BANK_SENSE		= 0
-const RIGHT_BANK_SENSE		= 1
+const LEFT_BANK_SENSE = 0
+const RIGHT_BANK_SENSE = 1
 
 // Coils
-const LEFT_BANK_ON_RELAY	= 1
-const LEFT_BANK_OFF_RELAY	= 2
-const RIGHT_BANK_ON_RELAY	= 3
-const RIGHT_BANK_OFF_RELAY	= 4
-const BATTERY_FAN_RELAY		= 8
-const LEFT_WATER_RELAY		= 6
-const RIGHT_WATER_RELAY		= 8
+const LEFT_BANK_ON_RELAY = 1
+const LEFT_BANK_OFF_RELAY = 2
+const RIGHT_BANK_ON_RELAY = 3
+const RIGHT_BANK_OFF_RELAY = 4
+const BATTERY_FAN_RELAY = 8
+const LEFT_WATER_RELAY = 6
+const RIGHT_WATER_RELAY = 8
 
 // Input Registers
-const CURRENT_REGISTER	=	1
-const ANALOGUE_0		=	2
-const ANALOGUE_1		=	3
-const ANALOGUE_2		=	4
-const ANALOGUE_3		=	5
-const ANALOGUE_6		=	6
-const ANALOGUE_7		=	7
-const AVG_CURRENT		=	8
-const RAW_CURRENT		=	9
-const UPTIME_LOW		=	10
-const UPTIME_HIGH		=	11
+const CURRENT_REGISTER = 1
+const ANALOGUE_0 = 2
+const ANALOGUE_1 = 3
+const ANALOGUE_2 = 4
+const ANALOGUE_3 = 5
+const ANALOGUE_6 = 6
+const ANALOGUE_7 = 7
+const AVG_CURRENT = 8
+const RAW_CURRENT = 9
+const UPTIME_LOW = 10
+const UPTIME_HIGH = 11
 
 // Holding Registers
-const SLAVE_ID_REGISTER		=	1
-const BAUD_RATE_REGISTER	=	2
-const OFFSET_REGISTER		=	3
-const PGA_GAIN_REGISTER		=	4
-const SAMPLES_PER_SEC_REG	=	5
-const CHARGE_REGISTER		=	6
-const CURRENT_GAIN_REG		=	7
-const EFFICIENCY_REG		=	8
+const SLAVE_ID_REGISTER = 1
+const BAUD_RATE_REGISTER = 2
+const OFFSET_REGISTER = 3
+const PGA_GAIN_REGISTER = 4
+const SAMPLES_PER_SEC_REG = 5
+const CHARGE_REGISTER = 6
+const CURRENT_GAIN_REG = 7
+const EFFICIENCY_REG = 8
 
 // Coils
-const RELAY_1_COIL			=	1
-const RELAY_2_COIL			=	2
-const RELAY_3_COIL			=	3
-const RELAY_4_COIL			=	4
-const RELAY_5_COIL			=	5
-const RELAY_6_COIL			=	6
-const RELAY_7_COIL			=	7
-const RELAY_8_COIL			=	8
-const MOMENTARY_1_COIL		=	9
-const MOMENTARY_2_COIL		=	10
-const MOMENTARY_3_COIL		=	11
-const MOMENTARY_4_COIL		=	12
-const MOMENTARY_5_COIL		=	13
-const MOMENTARY_6_COIL		=	14
-const MOMENTARY_7_COIL		=	15
-const MOMENTARY_8_COIL		=	16
+const RELAY_1_COIL = 1
+const RELAY_2_COIL = 2
+const RELAY_3_COIL = 3
+const RELAY_4_COIL = 4
+const RELAY_5_COIL = 5
+const RELAY_6_COIL = 6
+const RELAY_7_COIL = 7
+const RELAY_8_COIL = 8
+const MOMENTARY_1_COIL = 9
+const MOMENTARY_2_COIL = 10
+const MOMENTARY_3_COIL = 11
+const MOMENTARY_4_COIL = 12
+const MOMENTARY_5_COIL = 13
+const MOMENTARY_6_COIL = 14
+const MOMENTARY_7_COIL = 15
+const MOMENTARY_8_COIL = 16
 
 // Discrete Inputs
-const DISCRETE_1			=	1
-const DISCRETE_2			=	2
-const DISCRETE_3			=	3
-const DISCRETE_4			=	4
-const DISCRETE_5			=	5
-const DISCRETE_6			=	6
-const DISCRETE_7			=	7
-const DISCRETE_8			=	8
-const I2C_FAILURE			=	9
+const DISCRETE_1 = 1
+const DISCRETE_2 = 2
+const DISCRETE_3 = 3
+const DISCRETE_4 = 4
+const DISCRETE_5 = 5
+const DISCRETE_6 = 6
+const DISCRETE_7 = 7
+const DISCRETE_8 = 8
+const I2C_FAILURE = 9
 
 var EndPoints = []ModbusEndPoint{
 	{"1", "Current", CURRENT_REGISTER, InputRegister, 100, "A", false, true},
@@ -259,7 +259,7 @@ func (this *FuelGauge) WebProcessHoldingRegistersForm(w http.ResponseWriter, r *
 
 		for _, ep := range EndPoints {
 			if (ep.id == sKey) && (ep.dataType == HoldingRegister) {
-//				log.Println("Holding ", ep.id, " set to ", nValue)
+				//				log.Println("Holding ", ep.id, " set to ", nValue)
 				err = this.mbus.WriteHoldingRegister(uint16(ep.address), uint16(nValue), dataPointer.SlaveAddress)
 				if err != nil {
 					log.Println(err)
@@ -324,7 +324,7 @@ func (this *FuelGauge) getValues(bRefresh bool, lastValues *Data.Data, p *Modbus
 
 /**
 Set the charge level for the selected channel
- */
+*/
 func (this *FuelGauge) SetCharge(slave uint8, charge float32) {
 	this.mbus.WriteHoldingRegister(5, uint16(charge), slave)
 }
@@ -379,7 +379,7 @@ func (this *FuelGauge) logValues(current_0 uint16, current_1 uint16, charge_0 fl
 	}
 	if charge_0 != c0 {
 		// Update the controller because we needed to correct the charge level
-		this.mbus.WriteHoldingRegister(CHARGE_REGISTER, uint16(c0 * 10.0), this.FgLeft.SlaveAddress)
+		this.mbus.WriteHoldingRegister(CHARGE_REGISTER, uint16(c0*10.0), this.FgLeft.SlaveAddress)
 		charge_0 = c0
 	}
 	this.FgLeft.Coulombs = charge_0
@@ -400,7 +400,7 @@ func (this *FuelGauge) logValues(current_0 uint16, current_1 uint16, charge_0 fl
 	}
 	if charge_1 != c1 {
 		// Update the controller because we needed to correct the charge level
-		this.mbus.WriteHoldingRegister(CHARGE_REGISTER, uint16(c1 * 10.0), this.FgRight.SlaveAddress)
+		this.mbus.WriteHoldingRegister(CHARGE_REGISTER, uint16(c1*10.0), this.FgRight.SlaveAddress)
 		charge_1 = c1
 	}
 	this.FgRight.Coulombs = charge_1
@@ -408,7 +408,7 @@ func (this *FuelGauge) logValues(current_0 uint16, current_1 uint16, charge_0 fl
 
 /**
 Check that at least one battery is connected
- */
+*/
 func (this *FuelGauge) CheckBatteryConnectionState() {
 	if this.FgLeft.ModbusData.Discrete[LEFT_BANK_SENSE] && this.FgLeft.ModbusData.Discrete[RIGHT_BANK_SENSE] {
 		// Both batteries appear to be switched off so we need to switch the left bank on.
@@ -444,7 +444,7 @@ func (this *FuelGauge) Run() {
 				this.getValues(false, this.FgRight.ModbusData, this.mbus)
 
 				this.CheckBatteryConnectionState()
-				this.logValues(this.FgLeft.ModbusData.Input[7], this.FgRight.ModbusData.Input[7], float32(this.FgLeft.ModbusData.Holding[5]) / 10, float32(this.FgRight.ModbusData.Holding[5]) / 10)
+				this.logValues(this.FgLeft.ModbusData.Input[7], this.FgRight.ModbusData.Input[7], float32(this.FgLeft.ModbusData.Holding[5])/10, float32(this.FgRight.ModbusData.Holding[5])/10)
 			}
 		}
 	}
@@ -452,7 +452,7 @@ func (this *FuelGauge) Run() {
 
 /**
 Read the capacity and last full charge datetime vaules from the database
- */
+*/
 func (this *FuelGauge) ReadSystemParameters() {
 	row := this.pDB.QueryRow(`select date_value from system_parameters where name = 'bank0_full'`)
 	err := row.Scan(&this.FgLeft.LastFullCharge)
@@ -490,50 +490,28 @@ func (this *FuelGauge) setFullCharge(bank int) {
 }
 
 /**
-	Test the full charge state of the given battery.
- */
-func (this *FuelGauge) TestFullCharge(bank uint8) (full bool) {
-//	var count int
-//	bank = -1
-
-	switch (bank) {
-		case 0 : if this.FgLeft.Coulombs >= float32(this.FgLeft.Capacity){
-			this.setFullCharge(0)
-			return true
-		}
-		case 1 : if this.FgRight.Coulombs >= float32(this.FgRight.Capacity){
-			this.setFullCharge(1)
-			return true
-		}
-	}
-/*	row := this.fullChargeStatement.QueryRow(2, 38)
-	err := row.Scan(&count)
-	if err != nil {
-		log.Println("Error getting the full charge count for the left bank - ", err)
-	} else {
-		if count == LEFT_BANK_CELL_COUNT {
-			this.setFullCharge(0)
-			bank = 0
-		}
-	}
-	row = this.fullChargeStatement.QueryRow(101, 138)
-	err = row.Scan(&count)
-	if err != nil {
-		log.Println("Error getting the full charge count for the left bank - ", err)
-	} else {
-		if count == RIGHT_BANK_CELL_COUNT {
-			this.setFullCharge(1)
-			bank = 1
-		}
-	}
+Test the full charge state of the given battery.
 */
+func (this *FuelGauge) TestFullCharge(bank uint8) (full bool) {
+	switch bank {
+	case 0:
+		if this.FgLeft.Coulombs >= float32(this.FgLeft.Capacity) {
+			this.setFullCharge(0)
+			return true
+		}
+	case 1:
+		if this.FgRight.Coulombs >= float32(this.FgRight.Capacity) {
+			this.setFullCharge(1)
+			return true
+		}
+	}
 	return false
 }
 
 func (this *FuelGauge) GetLastFullChargeTimes() string {
-	var rowData struct{
-		Bank0 string	`json:"bank_0"`
-		Bank1 string	`json:"bank_1"`
+	var rowData struct {
+		Bank0 string `json:"bank_0"`
+		Bank1 string `json:"bank_1"`
 	}
 
 	rowData.Bank0 = this.FgLeft.LastFullCharge.Time.Format(``)
@@ -546,16 +524,18 @@ func (this *FuelGauge) GetLastFullChargeTimes() string {
 func (this *FuelGauge) ReadyToWater(bank int16) bool {
 	var percentCharged float32 = 0.0
 	switch bank {
-	case 0: percentCharged = (this.FgLeft.Coulombs / float32(this.FgLeft.Capacity)) * 100.0
-	case 1: percentCharged = (this.FgRight.Coulombs / float32(this.FgRight.Capacity)) * 100.0
+	case 0:
+		percentCharged = (this.FgLeft.Coulombs / float32(this.FgLeft.Capacity)) * 100.0
+	case 1:
+		percentCharged = (this.FgRight.Coulombs / float32(this.FgRight.Capacity)) * 100.0
 	}
 	return percentCharged > WATER_CHARGE_THRESHOLD
 }
 
 func (this *FuelGauge) GetCapacity() string {
-	var rowData struct{
-		Capacity0 int16	`json:"bank_0"`
-		Capacity1 int16	`json:"bank_1"`
+	var rowData struct {
+		Capacity0 int16 `json:"bank_0"`
+		Capacity1 int16 `json:"bank_1"`
 	}
 
 	rowData.Capacity0 = this.FgLeft.Capacity
@@ -571,7 +551,7 @@ func (this *FuelGauge) Capacity() (total int16, left int16, right int16) {
 
 /**
 Pulse the selected relay on the given slave for the given time duration
- */
+*/
 func (this *FuelGauge) PulseRelay(relay uint16, slave uint8, seconds uint8) {
 	// Turn the relay on
 	log.Println("Pulse - turning relay ", relay, " on.")
@@ -580,7 +560,7 @@ func (this *FuelGauge) PulseRelay(relay uint16, slave uint8, seconds uint8) {
 		log.Println("Failed to turn on relay ", relay, " - ", err)
 	}
 	// Turn it off again after the delay period
-	time.AfterFunc(time.Duration(seconds) * time.Second, func() {
+	time.AfterFunc(time.Duration(seconds)*time.Second, func() {
 		log.Println("Pulse - turning relay ", relay, " off again.")
 		err = this.mbus.WriteCoil(relay, false, slave)
 		if err != nil {
@@ -588,33 +568,33 @@ func (this *FuelGauge) PulseRelay(relay uint16, slave uint8, seconds uint8) {
 		}
 	})
 }
+
 /**
 Switch off one bank. If the other bank is already off we turn it on first so there is always at least one bank on.
 This is called when one bank reaches full charge to switch to the other bank.
 It should also be called at 7PM to switch to the left bank in case we are still on the right.
 This is done while the right bank cells are causing issues.
- */
+*/
 func (this *FuelGauge) SwitchOffBank(bank int) {
 	var (
-		onRelay uint16
-	 	offRelay uint16
-	 	thisBatterySense uint16
-	 	otherBatterySense uint16
+		onRelay           uint16
+		offRelay          uint16
+		thisBatterySense  uint16
+		otherBatterySense uint16
 	)
 
-
-//	log.Println("Switching off bank ", bank)
+	//	log.Println("Switching off bank ", bank)
 
 	if bank == LEFT_BANK {
-		onRelay = RIGHT_BANK_ON_RELAY			// Right bank on
-		offRelay = LEFT_BANK_OFF_RELAY			// Left bank off
-		thisBatterySense = LEFT_BANK_SENSE		// Sense input for the selected bank
-		otherBatterySense = RIGHT_BANK_SENSE	// Right bank sense
+		onRelay = RIGHT_BANK_ON_RELAY        // Right bank on
+		offRelay = LEFT_BANK_OFF_RELAY       // Left bank off
+		thisBatterySense = LEFT_BANK_SENSE   // Sense input for the selected bank
+		otherBatterySense = RIGHT_BANK_SENSE // Right bank sense
 	} else {
-		onRelay = LEFT_BANK_ON_RELAY			// Left bank on
-		offRelay = RIGHT_BANK_OFF_RELAY			// Right bank off
-		thisBatterySense = RIGHT_BANK_SENSE		// Sense input for the selected bank
-		otherBatterySense = LEFT_BANK_SENSE		// Left bank sense
+		onRelay = LEFT_BANK_ON_RELAY        // Left bank on
+		offRelay = RIGHT_BANK_OFF_RELAY     // Right bank off
+		thisBatterySense = RIGHT_BANK_SENSE // Sense input for the selected bank
+		otherBatterySense = LEFT_BANK_SENSE // Left bank sense
 	}
 
 	// If the bank is already switched off then do nothing and return
@@ -920,18 +900,18 @@ func (this *FuelGauge) WebGetValues(w http.ResponseWriter, _ *http.Request) {
 
 /**
 Perform the bank watering function. Turn on the relevant valve for the requested time in minutes.
- */
-func(this*FuelGauge) WaterBank(bank uint8, timer uint8) error {
+*/
+func (this *FuelGauge) WaterBank(bank uint8, timer uint8) error {
 	var relay uint16
-// Solenoids are on coils 6 & 8 of the right bank controller.
+	// Solenoids are on coils 6 & 8 of the right bank controller.
 	if bank == LEFT_BANK {
-	relay = LEFT_WATER_RELAY
+		relay = LEFT_WATER_RELAY
 	} else {
-	relay = RIGHT_WATER_RELAY
+		relay = RIGHT_WATER_RELAY
 	}
 	err := this.mbus.WriteCoil(relay, true, this.FgRight.SlaveAddress)
 	if err == nil {
-	time.AfterFunc(time.Duration(timer)*time.Minute, func() { this.mbus.WriteCoil(relay, false, this.FgRight.SlaveAddress) })
+		time.AfterFunc(time.Duration(timer)*time.Minute, func() { this.mbus.WriteCoil(relay, false, this.FgRight.SlaveAddress) })
 	} else {
 		return err
 	}
@@ -963,12 +943,12 @@ func (this *FuelGauge) WebWaterBank(w http.ResponseWriter, r *http.Request) {
 
 /**
 Turn on the fan if it is off
- */
+*/
 func (this *FuelGauge) TurnOnFan() {
-	if !this.FgLeft.ModbusData.Coil[BATTERY_FAN_RELAY -1] {
+	if !this.FgLeft.ModbusData.Coil[BATTERY_FAN_RELAY-1] {
 		err := this.mbus.WriteCoil(BATTERY_FAN_RELAY, true, this.FgLeft.SlaveAddress)
 		if err != nil {
-			log.Println( "Failed to turn the battery fan on", err)
+			log.Println("Failed to turn the battery fan on", err)
 		}
 	}
 }
@@ -977,10 +957,10 @@ func (this *FuelGauge) TurnOnFan() {
 Turn off the fan if it is on
 */
 func (this *FuelGauge) TurnOffFan() {
-	if this.FgLeft.ModbusData.Coil[BATTERY_FAN_RELAY - 1] {
+	if this.FgLeft.ModbusData.Coil[BATTERY_FAN_RELAY-1] {
 		err := this.mbus.WriteCoil(BATTERY_FAN_RELAY, false, this.FgLeft.SlaveAddress)
 		if err != nil {
-			log.Println( "Failed to turn the battery fan off", err)
+			log.Println("Failed to turn the battery fan off", err)
 		}
 	}
 }
@@ -1181,7 +1161,14 @@ func (this *FuelGauge) StateOfCharge() float32 {
 	return ((this.FgLeft.Coulombs + this.FgRight.Coulombs) * 100) / float32((this.FgLeft.Capacity + this.FgRight.Capacity))
 }
 
-func (this *FuelGauge) Current() float32 {
-	return float32((int16(this.FgLeft.ModbusData.Input[AVG_CURRENT - 1]) + int16(this.FgRight.ModbusData.Input[AVG_CURRENT - 1]))) / 100.0
+func (this *FuelGauge) StateOfChargeLeft() float32 {
+	return ((this.FgLeft.Coulombs) * 100) / float32((this.FgLeft.Capacity))
 }
 
+func (this *FuelGauge) StateOfChargeRight() float32 {
+	return ((this.FgRight.Coulombs) * 100) / float32((this.FgRight.Capacity))
+}
+
+func (this *FuelGauge) Current() float32 {
+	return float32((int16(this.FgLeft.ModbusData.Input[AVG_CURRENT-1]) + int16(this.FgRight.ModbusData.Input[AVG_CURRENT-1]))) / 100.0
+}

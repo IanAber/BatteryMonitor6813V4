@@ -875,67 +875,70 @@ func mainImpl() error {
 			hour := time.Now().Hour()
 			// No point in testing before 10am or after 8pm as there is no chance
 			// we are going to hit full charge so early in the morning or after the sun is going down.
-			if hour > 9 && hour < 19 {
-				if fuelgauge.ReadyToWater(0) && !bank0WateredToday {
-					// Water bank 0
-					err := fuelgauge.WaterBank(0, 15)
-					if err != nil {
-						log.Println(err)
-					}
-					bank0WateredToday = true
+			//			if hour > 9 && hour < 19 {
+			if fuelgauge.ReadyToWater(0) && !bank0WateredToday {
+				// Water bank 0
+				err := fuelgauge.WaterBank(0, 10)
+				if err != nil {
+					log.Println(err)
 				}
-				if fuelgauge.ReadyToWater(1) && !bank1WateredToday {
-					// Water bank 1
-					err := fuelgauge.WaterBank(1, 15)
-					if err != nil {
-						log.Println(err)
-					}
-					bank1WateredToday = true
+				bank0WateredToday = true
+			}
+			if fuelgauge.ReadyToWater(1) && !bank1WateredToday {
+				// Water bank 1
+				err := fuelgauge.WaterBank(1, 10)
+				if err != nil {
+					log.Println(err)
 				}
-				// If the evaluator pointer is nil then create a new evaluator
-				//				log.Println("Checking for full charge...")
-				if evaluator == nil {
-					evaluator, _ = FullChargeEvaluator.New(pDB)
-				}
-				// If the pointer is still nil we failed to create the evaluator so skip and try again next time.
-				if evaluator != nil {
-					// Process the full charge state process
-					err := evaluator.ProcessFullCharge(time.Now())
-					//					log.Println("Evaluating full charge")
-					//					t := time.Date(2020, 7, 21, 13,20, 0, 0, time.Local)
-					//					log.Println("Checking for", t)
-					//					err := evaluator.ProcessFullCharge( t)
-					// If we hit an error we should dispose of the evaluator and wait till the next loop to try again.
-					if err != nil {
-						log.Println(err)
-						evaluator = nil
-					}
-				} else {
-					log.Println("No full charge evaluator!")
-				}
-				// Test each bank for full charge
-				if fuelgauge.TestFullCharge(0) && !fuelgauge.TestFullCharge(1) {
-					fuelgauge.SwitchOffBank(0)
-				} else {
-					fuelgauge.SwitchOffBank(1)
-				}
-				if fuelgauge.TestFullCharge(0) && fuelgauge.TestFullCharge(1) {
-					setpoints.VTargetSetpoint = setpoints.VChargedSetpoint
-					setpoints.ITargetSetpoint = setpoints.IChargedSetpoint
-				} else {
-					setpoints.VTargetSetpoint = setpoints.VChargingSetpoint
-					setpoints.ITargetSetpoint = setpoints.IChargingSetpoint
+				bank1WateredToday = true
+			}
+			// If the evaluator pointer is nil then create a new evaluator
+			//				log.Println("Checking for full charge...")
+			if evaluator == nil {
+				evaluator, _ = FullChargeEvaluator.New(pDB)
+			}
+			// If the pointer is still nil we failed to create the evaluator so skip and try again next time.
+			if evaluator != nil {
+				// Process the full charge state process
+				err := evaluator.ProcessFullCharge(time.Now())
+				//					log.Println("Evaluating full charge")
+				//					t := time.Date(2020, 7, 21, 13,20, 0, 0, time.Local)
+				//					log.Println("Checking for", t)
+				//					err := evaluator.ProcessFullCharge( t)
+				// If we hit an error we should dispose of the evaluator and wait till the next loop to try again.
+				if err != nil {
+					log.Println(err)
+					evaluator = nil
 				}
 			} else {
+				log.Println("No full charge evaluator!")
+			}
+			// Test each bank for full charge
+			// If bank 0 is full and bank 1 is not, turn on bank 1
+			// Don't switch back unless bank 0 drops below 95%
+			if fuelgauge.TestFullCharge(0) && !fuelgauge.TestFullCharge(1) {
+				fuelgauge.SwitchOffBank(0)
+			} else if (fuelgauge.StateOfChargeLeft() < 95.0) || fuelgauge.TestFullCharge(1) {
+				fuelgauge.SwitchOffBank(1)
+			}
+			if fuelgauge.TestFullCharge(0) && fuelgauge.TestFullCharge(1) {
+				setpoints.VTargetSetpoint = setpoints.VChargedSetpoint
+				setpoints.ITargetSetpoint = setpoints.IChargedSetpoint
+			} else if fuelgauge.StateOfChargeLeft() < 98 || fuelgauge.StateOfChargeRight() < 98 {
+				setpoints.VTargetSetpoint = setpoints.VChargingSetpoint
+				setpoints.ITargetSetpoint = setpoints.IChargingSetpoint
+			}
+			//			} else {
+			if (hour == 1) && (bank0WateredToday || bank1WateredToday) {
 				// Clear the flags saying we have watered the battery
 				bank0WateredToday = false
 				bank1WateredToday = false
+			}
 
-				// While the bank 1 cells are problematic we need to switch to bank 0 at 7:00PM
-				if (hour == 19) && (time.Now().Minute() == 0) {
-					log.Println("Switching off right bank at 7PM")
-					go fuelgauge.SwitchOffBank(FuelGauge.RIGHT_BANK)
-				}
+			// While the bank 1 cells are problematic we need to switch to bank 0 at 8:00PM
+			if (hour == 20) && (time.Now().Minute() == 0) {
+				log.Println("Switching off right bank at 8PM")
+				go fuelgauge.SwitchOffBank(FuelGauge.RIGHT_BANK)
 			}
 			// Manage the battery fan based on the maximum temperature. If one or more temperature sensors
 			// show more than 42.0 C then turn on the fan if it is off. If the fan is on and the temperature is below 40.0
@@ -948,7 +951,7 @@ func mainImpl() error {
 				log.Println("Turning on the battery fan because the maximum temperature has risen to ", temp)
 				fuelgauge.TurnOnFan()
 				autoFan = true
-			} else if (temp < 40) && autoFan {
+			} else if (temp < 41.5) && autoFan {
 				log.Println("Turning off the battery fan because the maximum temperature has dropped to ", temp)
 				fuelgauge.TurnOffFan()
 				autoFan = false
