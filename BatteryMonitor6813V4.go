@@ -393,12 +393,12 @@ func handleCANFrame(frm can.Frame) {
 	case 0x307: // Relays and status
 		c307 := CAN_307.New(frm.Data[0:])
 		iValues.GnRun = c307.GnRun()
-		iValues.OnRelay1 = c307.Relay1_Master()
-		iValues.OnRelay2 = c307.Relay2_Master()
-		iValues.OnRelay1Slave1 = c307.Relay1_Slave1()
-		iValues.OnRelay2Slave1 = c307.Relay2_Slave1()
-		iValues.OnRelay1Slave2 = c307.Relay1_Slave2()
-		iValues.OnRelay2Slave2 = c307.Relay2_Slave2()
+		iValues.OnRelay1 = c307.Relay1Master()
+		iValues.OnRelay2 = c307.Relay2Master()
+		iValues.OnRelay1Slave1 = c307.Relay1Slave1()
+		iValues.OnRelay2Slave1 = c307.Relay2Slave1()
+		iValues.OnRelay1Slave2 = c307.Relay1Slave2()
+		iValues.OnRelay2Slave2 = c307.Relay2Slave2()
 		iValues.GnRun = c307.GnRun()
 		iValues.GnRunSlave1 = c307.GnRunSlave1()
 		iValues.GnRunSlave2 = c307.GnRunSlave2()
@@ -549,7 +549,7 @@ func returnWebError(w http.ResponseWriter, err error) {
 	}
 }
 
-func webGetStatus(w http.ResponseWriter, _ *http.Request) {
+func webGetStatus(w http.ResponseWriter, r *http.Request) {
 	type current struct {
 		Current  float64 `json:"current"`
 		Left     float64 `json:"left"`
@@ -559,10 +559,17 @@ func webGetStatus(w http.ResponseWriter, _ *http.Request) {
 		SOCRight float64 `json:"soc_right"`
 	}
 	var currentVal current
-
 	setHeaders(w)
 
-	// Get the average current and state of charge (SOC) for the past 30 seconds
+	vars := mux.Vars(r)
+	seconds, err := strconv.ParseUint(vars["avg"], 10, 16)
+	if err != nil {
+		http.Error(w, "Invalid averaging seconds (avg)", http.StatusBadRequest)
+		log.Println(err)
+		return
+	}
+
+	// Get the average current and state of charge (SOC) for the past 5 minutes
 	sSQL := `select avg(channel_0 + channel_1) as current
 			, avg(channel_0) as left_
 			, avg(channel_1) as right_
@@ -570,12 +577,12 @@ func webGetStatus(w http.ResponseWriter, _ *http.Request) {
 			, avg(level_of_charge_0) as soc_left
 			, avg(level_of_charge_1) as soc_right
 		from current
-		where logged > date_add(now(), interval -60 second)`
+		where logged > date_add(now(), interval -` + strconv.FormatUint(seconds, 10) + ` second)`
 
 	// Get the battery specifications for capacity
 	total, left, right := fuelgauge.Capacity()
 	row := pDB.QueryRow(sSQL)
-	err := row.Scan(&currentVal.Current, &currentVal.Left, &currentVal.Right, &currentVal.SOC, &currentVal.SOCLeft, &currentVal.SOCRight)
+	err = row.Scan(&currentVal.Current, &currentVal.Left, &currentVal.Right, &currentVal.SOC, &currentVal.SOCLeft, &currentVal.SOCRight)
 	if err != nil {
 		_, eFmt := fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
 		if eFmt != nil {
@@ -1014,7 +1021,7 @@ func mainImpl() error {
 	router.HandleFunc("/batteryCurrent", webGetCurrentData).Methods("GET")
 	router.HandleFunc("/batteryVoltages", webGetVoltageData).Methods("GET")
 	router.HandleFunc("/cellValues/{cell}", webGetCellData).Methods("GET")
-	router.HandleFunc("/status", webGetStatus).Methods("GET")
+	router.HandleFunc("/status/{avg}", webGetStatus).Methods("GET")
 	router.HandleFunc("/bankOff/{bank}", webSwitchOffBank).Methods("GET")
 	router.HandleFunc("/chargingParameters", webGetChargingParameters).Methods("GET")
 	spa := spaHandler{staticPath: "/var/www/html", indexPath: "index.html"}

@@ -1230,8 +1230,10 @@ func New(commsPort string, baudRate int, dataBits int, stopBits int, parity stri
 	return this
 }
 
+// Temporarily exclude the right battery as it is not working
 func (fuelgauge *FuelGauge) StateOfCharge() float32 {
-	return ((fuelgauge.FgLeft.Coulombs + fuelgauge.FgRight.Coulombs) * 100) / float32(fuelgauge.FgLeft.Capacity+fuelgauge.FgRight.Capacity)
+	//	return ((fuelgauge.FgLeft.Coulombs + fuelgauge.FgRight.Coulombs) * 100) / float32(fuelgauge.FgLeft.Capacity+fuelgauge.FgRight.Capacity)
+	return fuelgauge.StateOfChargeLeft()
 }
 
 func (fuelgauge *FuelGauge) StateOfChargeLeft() float32 {
