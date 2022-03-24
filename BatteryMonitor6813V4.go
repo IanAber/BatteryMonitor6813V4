@@ -1,14 +1,6 @@
 package main
 
 import (
-	"BatteryMonitor6813V4/CanMessages/CAN_010"
-	"BatteryMonitor6813V4/CanMessages/CAN_305"
-	"BatteryMonitor6813V4/CanMessages/CAN_306"
-	"BatteryMonitor6813V4/CanMessages/CAN_307"
-	"BatteryMonitor6813V4/CanMessages/CAN_351"
-	"BatteryMonitor6813V4/CanMessages/CAN_355"
-	"BatteryMonitor6813V4/CanMessages/CAN_356"
-	"BatteryMonitor6813V4/CanMessages/CAN_35E"
 	"BatteryMonitor6813V4/FuelGauge"
 	"BatteryMonitor6813V4/FullChargeEvaluator"
 	"BatteryMonitor6813V4/LTC6813/LTC6813"
@@ -17,11 +9,8 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"github.com/IanAber/SMACanMessages"
 	"github.com/brutella/can"
-
-	//	"github.com/brutella/can"
-	//	_ "github.com/go-sql-driver/mysql"
-
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"log"
@@ -379,22 +368,22 @@ func handleCANFrame(frm can.Frame) {
 	}
 	switch frm.ID {
 	case 0x305: // Battery voltage, current and state of charge
-		c305 := CAN_305.New(frm.Data[0:])
+		c305 := SMACanMessages.NewCan305(frm.Data[0:])
 
 		iValues.Volts = c305.VBatt()
 		iValues.Amps = c305.IBatt()
 		iValues.Soc = c305.SocBatt()
 
 	case 0x306: // Charge procedure, Operating state, Active error, Charge set point
-		c306 := CAN_306.New(frm.Data[0:])
+		c306 := SMACanMessages.NewCan306(frm.Data[0:])
 		iValues.Vsetpoint = c306.ChargeSetPoint()
 
 	case 0x010: // Frequency
-		c010 := CAN_010.New(frm.Data[0:])
+		c010 := SMACanMessages.NewCan010(frm.Data[0:])
 		iValues.Frequency = c010.Frequency()
 
 	case 0x307: // Relays and status
-		c307 := CAN_307.New(frm.Data[0:])
+		c307 := SMACanMessages.NewCan307(frm.Data[0:])
 		iValues.GnRun = c307.GnRun()
 		iValues.OnRelay1 = c307.Relay1Master()
 		iValues.OnRelay2 = c307.Relay2Master()
@@ -805,20 +794,20 @@ func SendSMAHeartBeat() {
 	}
 	for {
 		<-heartbeat.C
-		msg351 := CAN_351.New(setpoints.VSetpoint, setpoints.ISetpoint, setpoints.IDischarge, setpoints.VDischarge)
+		msg351 := SMACanMessages.NewCan351(setpoints.VSetpoint, setpoints.ISetpoint, setpoints.IDischarge, setpoints.VDischarge)
 		//		log.Println("CAN-351 : ", msg351.Frame())
 		err := bus.Publish(msg351.Frame())
 		if err != nil {
 			log.Println("CAN 351 Message error - ", err)
 		}
-		msg355 := CAN_355.New(uint16(fuelgauge.StateOfCharge()), 100.0, fuelgauge.StateOfCharge())
+		msg355 := SMACanMessages.NewCan355(uint16(fuelgauge.StateOfCharge()), 100.0, fuelgauge.StateOfCharge())
 		//		log.Println("CAN-355 : ", msg355.Frame())
 		err = bus.Publish(msg355.Frame())
 		if err != nil {
 			log.Println("CAN 355 Message error - ", err)
 		}
 
-		msg356 := CAN_356.New(ltc.GetActiveBatteryVoltage(), fuelgauge.Current(), ltc.GetMaxTemperature())
+		msg356 := SMACanMessages.NewCan356(ltc.GetActiveBatteryVoltage(), fuelgauge.Current(), ltc.GetMaxTemperature())
 		//		log.Println("CAN-356 : ", msg356.Frame())
 		err = bus.Publish(msg356.Frame())
 		if err != nil {
@@ -826,7 +815,7 @@ func SendSMAHeartBeat() {
 		}
 
 		if loops == 0 {
-			msg35E := CAN_35E.New("Encell")
+			msg35E := SMACanMessages.NewCan35E("Encell")
 			//			log.Println("CAN-35E : ", msg35E.Frame())
 			err = bus.Publish(msg35E.Frame())
 			if err != nil {
@@ -1000,7 +989,7 @@ func mainImpl() error {
 		}
 	}()
 
-	// Start handling incoming CAN messages
+	// Start handling incoming 'CAN' messages
 	go func() {
 		bus, err := can.NewBusForInterfaceWithName("can0")
 		if err != nil {

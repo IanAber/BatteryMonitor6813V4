@@ -1,3 +1,5 @@
+github.com/IanAber/SMACanMessages v0.0.0-20220324225941-122bdd7703db h1:c/TrO5XtC1M8+BGEJ44s0CaQi7oDjM8VzeNDV56Hm6U=
+github.com/IanAber/SMACanMessages v0.0.0-20220324225941-122bdd7703db/go.mod h1:rqWja9GY5/GzeGLBXU1igl2DxVXJsoEU7wjCJLi7lFc=
 github.com/brutella/can v0.0.2 h1:8TyjZrBZSwQwSr5x3U9KtKzGW8HNE/NpUgsNcYDAVIM=
 github.com/brutella/can v0.0.2/go.mod h1:NYDxbQito3w4+4DcjWs/fpQ3xyaFdpXw/KYqtZFU98k=
 github.com/go-sql-driver/mysql v1.6.0 h1:BCTh4TKNUYmOmMUcQ3IipzF5prigylS7XXjEkfCHuOE=

@@ -3,6 +3,7 @@ module BatteryMonitor6813V4
 go 1.16
 
 require (
+	github.com/IanAber/SMACanMessages v0.0.0-20220324225941-122bdd7703db
 	github.com/brutella/can v0.0.2
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/goburrow/modbus v0.1.0
