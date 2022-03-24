@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SshConfigs">
+    <configs>
+      <sshConfig authType="PASSWORD" host="aberhome1.local" id="507e7df4-a46c-4580-a3e0-614af3d69ab9" port="22" customName="Aberhome1" nameFormat="CUSTOM" username="pi" />
+      <sshConfig authType="PASSWORD" host="Battery.Local" id="f6f7d20a-7781-46cf-8584-368d84a0e76f" port="22" customName="Battery" nameFormat="CUSTOM" username="pi" />
+    </configs>
+  </component>
+</project>

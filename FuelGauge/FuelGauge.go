@@ -1,13 +1,13 @@
 package FuelGauge
 
 import (
-	"ModbusBatteryFuelGauge/Data"
-	"ModbusBatteryFuelGauge/modbusController"
+	"BatteryMonitor6813V4/ModbusBatteryFuelGauge/Data"
+	ModbusController "BatteryMonitor6813V4/ModbusBatteryFuelGauge/modbusController"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
+
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -24,7 +24,7 @@ type fuelGaugeChannel struct {
 	SlaveAddress   uint8
 	LastUpdate     time.Time
 	Capacity       int16
-	LastFullCharge mysql.NullTime
+	LastFullCharge sql.NullTime
 }
 
 //type batterySettings struct {
@@ -1210,7 +1210,7 @@ func New(commsPort string, baudRate int, dataBits int, stopBits int, parity stri
 		for rows.Next() {
 			var count0 float32
 			var count1 float32
-			var when mysql.NullTime
+			var when sql.NullTime
 			err = rows.Scan(&when, &count0, &count1)
 			if err != nil {
 				log.Println("Failed to get the last coulomb counts - ", err)

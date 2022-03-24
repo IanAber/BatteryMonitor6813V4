@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="ModbusBatteryFuelGauge" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="modbusBatteryFuelGauge" />
+    <working_directory value="$PROJECT_DIR$/" />
+    <go_parameters value="-i -o bin/ARM/fuelgauge" />
+    <envs>
+      <env name="GOOS" value="linux" />
+      <env name="GOARCH" value="arm" />
+    </envs>
+    <kind value="DIRECTORY" />
+    <filePath value="$PROJECT_DIR$/ModbusBatteryFuelGauge.go" />
+    <directory value="$PROJECT_DIR$" />
+    <output_directory value="$PROJECT_DIR$/bin/ARM" />
+    <option name="run" value="false" />
+    <method v="2" />
+  </configuration>
+</component>

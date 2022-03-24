@@ -1,24 +1,27 @@
 package main
 
 import (
+	"BatteryMonitor6813V4/CanMessages/CAN_010"
+	"BatteryMonitor6813V4/CanMessages/CAN_305"
+	"BatteryMonitor6813V4/CanMessages/CAN_306"
+	"BatteryMonitor6813V4/CanMessages/CAN_307"
+	"BatteryMonitor6813V4/CanMessages/CAN_351"
+	"BatteryMonitor6813V4/CanMessages/CAN_355"
+	"BatteryMonitor6813V4/CanMessages/CAN_356"
+	"BatteryMonitor6813V4/CanMessages/CAN_35E"
 	"BatteryMonitor6813V4/FuelGauge"
 	"BatteryMonitor6813V4/FullChargeEvaluator"
-	"CanMessages/CAN_010"
-	"CanMessages/CAN_305"
-	"CanMessages/CAN_306"
-	"CanMessages/CAN_307"
-	"CanMessages/CAN_351"
-	"CanMessages/CAN_355"
-	"CanMessages/CAN_356"
-	"CanMessages/CAN_35E"
-	"LTC6813/LTC6813"
+	"BatteryMonitor6813V4/LTC6813/LTC6813"
 	"database/sql"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"github.com/brutella/can"
-	_ "github.com/go-sql-driver/mysql"
+
+	//	"github.com/brutella/can"
+	//	_ "github.com/go-sql-driver/mysql"
+
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"log"
@@ -580,7 +583,9 @@ func webGetStatus(w http.ResponseWriter, r *http.Request) {
 		where logged > date_add(now(), interval -` + strconv.FormatUint(seconds, 10) + ` second)`
 
 	// Get the battery specifications for capacity
-	total, left, right := fuelgauge.Capacity()
+	// Ignore the right bank for now.
+	//	total, left, right := fuelgauge.Capacity()
+	_, left, right := fuelgauge.Capacity()
 	row := pDB.QueryRow(sSQL)
 	err = row.Scan(&currentVal.Current, &currentVal.Left, &currentVal.Right, &currentVal.SOC, &currentVal.SOCLeft, &currentVal.SOCRight)
 	if err != nil {
@@ -593,7 +598,9 @@ func webGetStatus(w http.ResponseWriter, r *http.Request) {
 		currentVal.Current = math.Round(currentVal.Current*10) / 10
 		currentVal.Left = math.Round(currentVal.Left*10) / 10
 		currentVal.Right = math.Round(currentVal.Right*10) / 10
-		currentVal.SOC = math.Round((currentVal.SOC/float64(total))*1000) / 10
+		// Ignore the right bank for now.
+		//		currentVal.SOC = math.Round((currentVal.SOC/float64(total))*1000) / 10
+		currentVal.SOC = math.Round((currentVal.SOCLeft/float64(left))*1000) / 10
 		currentVal.SOCLeft = math.Round((currentVal.SOCLeft/float64(left))*1000) / 10
 		currentVal.SOCRight = math.Round((currentVal.SOCRight/float64(right))*1000) / 10
 
@@ -723,6 +730,7 @@ func webGetCellData(w http.ResponseWriter, r *http.Request) {
 		Logged  float64 `json:"logged"`
 		Current float64 `json:"amps"`
 		Voltage float64 `json:"volts"`
+		Temp    float64 `json:"temp"`
 	}
 	var cellVal values
 	var cellData []values = nil
@@ -735,9 +743,25 @@ func webGetCellData(w http.ResponseWriter, r *http.Request) {
 	if (r.FormValue("minAmps") != "") && (r.FormValue("maxAmps") != "") {
 		sCurrentTerm = fmt.Sprintf(" and i.channel_%d > %s and i.channel_%d < %s", cell/100, r.FormValue("minAmps"), cell/100, r.FormValue("maxAmps"))
 	}
+	sVoltageTable := "voltage"
+	sCurrentTable := "current"
+	tm, err := time.Parse("2006-1-2 15:4", r.FormValue("start"))
+	if err != nil {
+		log.Println("Error reading start time ", r.FormValue("start"), " - ", err)
+		if _, err := fmt.Fprint(w, err.Error()); err != nil {
+			log.Println(err)
+		}
+		return
+	}
+
+	if tm.Before(time.Now().AddDate(0, -1, 0)) {
+		// Select data from the archive tables
+		sVoltageTable = "voltage_archive"
+		sCurrentTable = "current_archive"
+	}
 
 	sSQL := fmt.Sprintf(`select min(unix_timestamp(v.logged)) as logged, avg(cell_%03d) / 10000 as volts, avg(i.channel_%d) as amps
-    from voltage v join current i on i.logged = from_unixtime(round(unix_timestamp(v.logged)))
+    from `+sVoltageTable+` v join `+sCurrentTable+` i on i.logged = from_unixtime(round(unix_timestamp(v.logged)))
    where v.logged between '`+r.FormValue("start")+`' and '`+r.FormValue("end")+`'`+sCurrentTerm+`
    group by unix_timestamp(v.logged) DIV 15`, cell, cell/100)
 	rows, err := pDB.Query(sSQL)

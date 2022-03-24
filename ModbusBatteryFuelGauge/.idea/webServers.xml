@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="6bb6ddb9-e2e2-4f9b-9e9b-9916ccf00168" name="BatteryFuelGauge" url="http://battery">
+        <fileTransfer rootFolder="/home/pi" accessType="SFTP" host="Battery.Local" port="22" sshConfigId="f6f7d20a-7781-46cf-8584-368d84a0e76f" sshConfig="Battery">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

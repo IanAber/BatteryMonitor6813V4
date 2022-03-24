@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" autoUpload="Always" serverName="battery.local" autoUploadExternalChanges="true">
+  <component name="PublishConfigData" autoUpload="Always" serverName="Battery" autoUploadExternalChanges="true">
     <serverData>
-      <paths name="battery.local">
+      <paths name="Battery">
         <serverdata>
           <mappings>
-            <mapping deploy="/BatteryMonitor6813V4" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/home/pi/projects/go/src/BatteryMonitor6813V4" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>
