@@ -843,7 +843,11 @@ Return the cell voltage for a given cell.
 func (this *LTC6813) GetVolts(bank int, cell int) float32 {
 	this.dmu.Lock()
 	defer this.dmu.Unlock()
-	return float32(this.readings[bank].CellVolts[cell]) / 10000.0
+	if bank < this.chainLength {
+		return float32(this.readings[bank].CellVolts[cell]) / 10000.0
+	} else {
+		return 0.0
+	}
 }
 
 /**
@@ -852,7 +856,11 @@ Return the cell voltage for a given cell.
 func (this *LTC6813) GetRawVolts(bank int, cell int) uint16 {
 	this.dmu.Lock()
 	defer this.dmu.Unlock()
-	return this.readings[bank].CellVolts[cell]
+	if bank < this.chainLength {
+		return this.readings[bank].CellVolts[cell]
+	} else {
+		return 0
+	}
 }
 
 /**
@@ -880,13 +888,17 @@ func (this *LTC6813) GetTemperature(bank int, sensor int) (float32, error) {
 	this.dmu.Lock()
 	defer this.dmu.Unlock()
 
-	if this.readings[bank].temperatures[sensor] < -100.0 {
-		return this.readings[bank].temperatures[sensor], fmt.Errorf("ERR")
+	if bank < this.chainLength {
+		if this.readings[bank].temperatures[sensor] < -100.0 {
+			return this.readings[bank].temperatures[sensor], fmt.Errorf("ERR")
+		}
+		if this.readings[bank].temperatures[sensor] > 100.0 {
+			return this.readings[bank].temperatures[sensor], fmt.Errorf("ERR")
+		}
+		return this.readings[bank].temperatures[sensor], nil
+	} else {
+		return 0.0, nil
 	}
-	if this.readings[bank].temperatures[sensor] > 100.0 {
-		return this.readings[bank].temperatures[sensor], fmt.Errorf("ERR")
-	}
-	return this.readings[bank].temperatures[sensor], nil
 }
 
 /**
@@ -896,7 +908,10 @@ func (this *LTC6813) GetTemp(bank int, sensor int) int16 {
 	this.dmu.Lock()
 	defer this.dmu.Unlock()
 
-	t := int16(this.readings[bank].temperatures[sensor] * 10)
+	t := int16(0)
+	if bank < this.chainLength {
+		t = int16(this.readings[bank].temperatures[sensor] * 10)
+	}
 	switch {
 	case (t < -100):
 		return -32768
@@ -913,7 +928,11 @@ Get the reference voltage value
 func (this *LTC6813) GetRefVolts(bank int) float32 {
 	this.dmu.Lock()
 	defer this.dmu.Unlock()
-	return float32(this.readings[bank].RefVolts) / 10000.0
+	if bank < this.chainLength {
+		return float32(this.readings[bank].RefVolts) / 10000.0
+	} else {
+		return 0.0
+	}
 }
 
 /**
@@ -922,7 +941,11 @@ Get the sum of cells voltage value
 func (this *LTC6813) GetSumOfCellsVolts(bank int) float32 {
 	this.dmu.Lock()
 	defer this.dmu.Unlock()
-	return (float32(this.readings[bank].SumOfCells) / 10000.0) * 30
+	if bank < this.chainLength {
+		return (float32(this.readings[bank].SumOfCells) / 10000.0) * 30
+	} else {
+		return 0.0
+	}
 }
 
 /**
@@ -931,7 +954,11 @@ Get the raw sum of cells voltage value
 func (this *LTC6813) GetRawSumOfCellsVolts(bank int) uint16 {
 	this.dmu.Lock()
 	defer this.dmu.Unlock()
-	return (this.readings[bank].SumOfCells / 10) * 3
+	if bank < this.chainLength {
+		return (this.readings[bank].SumOfCells / 10) * 3
+	} else {
+		return 0
+	}
 }
 
 /**
@@ -940,7 +967,11 @@ Get the GPIO measured voltage
 func (this *LTC6813) GetGPIOVolts(bank int, sensor int) uint16 {
 	this.dmu.Lock()
 	defer this.dmu.Unlock()
-	return this.readings[bank].GPIOVolts[sensor]
+	if bank < this.chainLength {
+		return this.readings[bank].GPIOVolts[sensor]
+	} else {
+		return 0
+	}
 }
 
 /**
@@ -952,20 +983,39 @@ func (this *LTC6813) GetVoltagesAsJSON() string {
 		Totals   [2]float32  `json:"totals"`
 	}
 
-	this.dmu.Lock()
-	defer this.dmu.Unlock()
-
 	//	values.Voltages = make([][]uint16, 2)
-	values.Voltages[0] = append(append(this.readings[0].CellVolts[0:18], this.readings[1].CellVolts[0:18]...), this.readings[2].CellVolts[0:2]...)
-	values.Voltages[1] = append(append(this.readings[3].CellVolts[0:18], this.readings[4].CellVolts[0:18]...), this.readings[5].CellVolts[0:2]...)
-	values.Totals[0] = float32(Round((float64(this.readings[0].SumOfCells)*0.003)+(float64(this.readings[1].SumOfCells)*0.003)+(float64(this.readings[2].CellVolts[0])/10000.0)+(float64(this.readings[2].CellVolts[1])/10000.0), 0.5, 2))
-	values.Totals[1] = float32(Round((float64(this.readings[3].SumOfCells)*0.003)+(float64(this.readings[3].SumOfCells)*0.003)+(float64(this.readings[5].CellVolts[0])/10000.0)+(float64(this.readings[5].CellVolts[1])/10000.0), 0.5, 2))
+	values.Voltages[0] = append(append(this.GetCellVolts(0), this.GetCellVolts(1)...), this.GetCellVolts(2)...)
+	values.Voltages[1] = append(append(this.GetCellVolts(3), this.GetCellVolts(4)...), this.GetCellVolts(5)...)
+	values.Totals[0] = float32(Round((float64(this.GetSumOfCellsVolts(0))*0.003)+(float64(this.GetSumOfCellsVolts(1))*0.003)+(float64(this.GetOneCellVolts(2, 0))/10000.0)+(float64(this.GetOneCellVolts(2, 1))/10000.0), 0.5, 2))
+	values.Totals[1] = float32(Round((float64(this.GetSumOfCellsVolts(3))*0.003)+(float64(this.GetSumOfCellsVolts(4))*0.003)+(float64(this.GetOneCellVolts(5, 0))/10000.0)+(float64(this.GetOneCellVolts(5, 1))/10000.0), 0.5, 2))
 	s, err := json.Marshal(values)
 	if err != nil {
 		fmt.Println("Error marshalling the voltages to JSON - ", s)
 		return ""
 	}
 	return string(s)
+}
+
+/**
+GetOneCellVolts returns a single cell voltage measurement
+*/
+func (this *LTC6813) GetOneCellVolts(bank int, cell int) uint16 {
+	if bank < this.chainLength {
+		return this.readings[bank].CellVolts[cell]
+	} else {
+		return 0
+	}
+}
+
+/**
+GetCellVolts returns the array of cell voltages for the given bank
+*/
+func (this *LTC6813) GetCellVolts(bank int) []uint16 {
+	if bank < this.chainLength {
+		return this.readings[bank].CellVolts[0:18]
+	} else {
+		return make([]uint16, 18)
+	}
 }
 
 /**
@@ -979,8 +1029,8 @@ func (this *LTC6813) GetTemperaturesAsJSON() string {
 	this.dmu.Lock()
 	defer this.dmu.Unlock()
 
-	values.Temperatures[0] = append(append(this.readings[0].temperatures[0:18], this.readings[1].temperatures[0:18]...), this.readings[2].temperatures[0:2]...)
-	values.Temperatures[1] = append(append(this.readings[3].temperatures[0:18], this.readings[4].temperatures[0:18]...), this.readings[5].temperatures[0:2]...)
+	values.Temperatures[0] = append(append(this.GetBankTemperatures(0), this.GetBankTemperatures(1)...), this.GetBankTemperatures(2)[0:2]...)
+	values.Temperatures[1] = append(append(this.GetBankTemperatures(3), this.GetBankTemperatures(4)...), this.GetBankTemperatures(5)[0:2]...)
 
 	s, err := json.Marshal(values)
 	if err != nil {
@@ -988,6 +1038,14 @@ func (this *LTC6813) GetTemperaturesAsJSON() string {
 		return ""
 	}
 	return string(s)
+}
+
+func (this *LTC6813) GetBankTemperatures(bank int) []float32 {
+	if bank < this.chainLength {
+		return this.readings[bank].temperatures[0:18]
+	} else {
+		return make([]float32, 18)
+	}
 }
 
 /**
@@ -1001,17 +1059,16 @@ func (this *LTC6813) GetValuesAsJSON() []byte {
 		Totals           [2]float32   `json:"totals"`
 		Temperatures     [2][]float32 `json:"temperatures"`
 	}
-	this.dmu.Lock()
-	defer this.dmu.Unlock()
-
 	values.VoltageError = this.lastVoltageError
 	values.TemperatureError = this.lastTempError
-	values.Voltages[0] = append(append(this.readings[0].CellVolts[0:18], this.readings[1].CellVolts[0:18]...), this.readings[2].CellVolts[0:2]...)
-	values.Voltages[1] = append(append(this.readings[3].CellVolts[0:18], this.readings[4].CellVolts[0:18]...), this.readings[5].CellVolts[0:2]...)
-	values.Totals[0] = float32(Round((float64(this.readings[0].SumOfCells)*0.003)+(float64(this.readings[1].SumOfCells)*0.003)+(float64(this.readings[2].CellVolts[0])/10000.0)+(float64(this.readings[2].CellVolts[1])/10000.0), 0.5, 2))
-	values.Totals[1] = float32(Round((float64(this.readings[3].SumOfCells)*0.003)+(float64(this.readings[4].SumOfCells)*0.003)+(float64(this.readings[5].CellVolts[0])/10000.0)+(float64(this.readings[5].CellVolts[1])/10000.0), 0.5, 2))
-	values.Temperatures[0] = append(append(this.readings[0].temperatures[0:18], this.readings[1].temperatures[0:18]...), this.readings[2].temperatures[0:2]...)
-	values.Temperatures[1] = append(append(this.readings[3].temperatures[0:18], this.readings[4].temperatures[0:18]...), this.readings[5].temperatures[0:2]...)
+	values.Voltages[0] = append(append(this.GetCellVolts(0), this.GetCellVolts(1)...), this.GetCellVolts(2)[0:2]...)
+	values.Voltages[1] = append(append(this.GetCellVolts(3), this.GetCellVolts(4)...), this.GetCellVolts(5)[0:2]...)
+	//	values.Totals[0] = float32(Round((float64(this.GetSumOfCellsVolts(0))*0.003)+(float64(this.GetSumOfCellsVolts(1))*0.003)+(float64(this.GetRawVolts(2, 0))/10000.0)+(float64(this.GetRawVolts(2, 1))/10000.0), 0.5, 2))
+	//	values.Totals[1] = float32(Round((float64(this.GetSumOfCellsVolts(3))*0.003)+(float64(this.GetSumOfCellsVolts(4))*0.003)+(float64(this.GetRawVolts(5, 0))/10000.0)+(float64(this.GetRawVolts(5, 1))/10000.0), 0.5, 2))
+	values.Totals[0] = this.GetSumOfCellsVolts(0) + this.GetSumOfCellsVolts(1) + float32(this.GetRawVolts(2, 0))/10000.0 + (float32(this.GetRawVolts(2, 1)) / 10000.0)
+	values.Totals[1] = this.GetSumOfCellsVolts(3) + this.GetSumOfCellsVolts(4) + float32(this.GetRawVolts(5, 0))/10000.0 + (float32(this.GetRawVolts(5, 1)) / 10000.0)
+	values.Temperatures[0] = append(append(this.GetBankTemperatures(0), this.GetBankTemperatures(1)...), this.GetBankTemperatures(2)[0:2]...)
+	values.Temperatures[1] = append(append(this.GetBankTemperatures(3), this.GetBankTemperatures(4)...), this.GetBankTemperatures(5)[0:2]...)
 
 	j, err := json.Marshal(values)
 	if err != nil {

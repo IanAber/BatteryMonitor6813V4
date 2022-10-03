@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -95,8 +94,9 @@ const LeftBankOnRelay = 1
 const LeftBankOffRelay = 2
 const RightBankOnRelay = 3
 const RightBankOffRelay = 4
+const GeneratorRelay = 5
 const BatteryFanRelay = 8
-const LeftWaterRelay = 6
+const LeftWaterRelay = 7
 const RightWaterRelay = 8
 
 // Input Registers
@@ -151,7 +151,58 @@ const Discrete7 = 7
 const Discrete8 = 8
 const I2cFailure = 9
 
-var EndPoints = []ModbusEndPoint{
+var EndPointsLeft = []ModbusEndPoint{
+	{"1", "Current", CurrentRegister, InputRegister, 100, "A", false, true},
+	{"2", "Analog In 0", Analogue0, InputRegister, 1, "", false, false},
+	{"3", "Analog In 1", Analogue1, InputRegister, 1, "", false, false},
+	{"4", "Analog In 2", Analogue2, InputRegister, 1, "", false, false},
+	{"5", "Analog In 3", Analogue3, InputRegister, 1, "", false, false},
+	{"6", "Analog In 6", Analogue6, InputRegister, 1, "", false, true},
+	{"7", "Analog In 7", Analogue7, InputRegister, 1, "", false, true},
+	{"8", "Avg Current", AvgCurrent, InputRegister, 100, "A", false, true},
+	{"9", "Raw Current", RawCurrent, InputRegister, 1, "", false, true},
+	{"x1", "", 0, Blank, 0, "", false, false},
+	{"10", "Up Time Low", UptimeLow, InputRegister, 1, "", false, false},
+	{"11", "Up Time High", UptimeHigh, InputRegister, 1, "", false, false},
+
+	{"1", "Slave ID", SlaveIdRegister, HoldingRegister, 1, "", true, false},
+	{"2", "Baud Rate", BaudRateRegister, HoldingRegister, 1, "", true, false},
+	{"3", "Offset", OffsetRegister, HoldingRegister, 1, "", true, true},
+	{"4", "PGA Gain", PgaGainRegister, HoldingRegister, 1, "", true, false},
+	{"5", "Samples Per Sec", SamplesPerSecReg, HoldingRegister, 1, "", true, false},
+	{"6", "Charge", ChargeRegister, HoldingRegister, 10, "Ahr", true, true},
+	{"7", "Current Gain", CurrentGainReg, HoldingRegister, 1, "", true, true},
+	{"8", "Charge Efficiency", EfficiencyReg, HoldingRegister, 2, "%", true, true},
+
+	{"1", "Left On", Relay1Coil, Coil, 1, "", true, false},
+	{"2", "Left Off", Relay2Coil, Coil, 1, "", true, false},
+	{"3", "Right On", Relay3Coil, Coil, 1, "", true, false},
+	{"4", "Right Off", Relay4Coil, Coil, 1, "", true, false},
+	{"5", "Generator", Relay5Coil, Coil, 1, "", true, false},
+	{"6", "Relay 6", Relay6Coil, Coil, 1, "", true, false},
+	{"7", "Relay 7", Relay7Coil, Coil, 1, "", true, false},
+	{"8", "Fan", Relay8Coil, Coil, 1, "", true, false},
+	{"9", "Momentary 1", Momentary1Coil, Coil, 1, "", true, false},
+	{"10", "Momentary 2", Momentary2Coil, Coil, 1, "", true, false},
+	{"11", "Momentary 3", Momentary3Coil, Coil, 1, "", true, false},
+	{"12", "Momentary 4", Momentary4Coil, Coil, 1, "", true, false},
+	{"13", "Momentary 5", Momentary5Coil, Coil, 1, "", true, false},
+	{"14", "Momentary 6", Momentary6Coil, Coil, 1, "", true, false},
+	{"15", "Momentary 7", Momentary7Coil, Coil, 1, "", true, false},
+	{"16", "Momentary 8", Momentary8Coil, Coil, 1, "", true, false},
+
+	{"1", "Digital In 1", Discrete1, Discrete, 1, "", false, false},
+	{"2", "Digital In 2", Discrete2, Discrete, 1, "", false, false},
+	{"3", "Digital In 3", Discrete3, Discrete, 1, "", false, false},
+	{"4", "Digital In 4", Discrete4, Discrete, 1, "", false, false},
+	{"5", "Digital In 5", Discrete5, Discrete, 1, "", false, false},
+	{"6", "Digital In 6", Discrete6, Discrete, 1, "", false, false},
+	{"7", "Digital In 7", Discrete7, Discrete, 1, "", false, false},
+	{"8", "Digital In 8", Discrete8, Discrete, 1, "", false, false},
+	{"9", "I2C Failure", I2cFailure, Discrete, 1, "", false, false},
+}
+
+var EndPointsRight = []ModbusEndPoint{
 	{"1", "Current", CurrentRegister, InputRegister, 100, "A", false, true},
 	{"2", "Analog In 0", Analogue0, InputRegister, 1, "", false, false},
 	{"3", "Analog In 1", Analogue1, InputRegister, 1, "", false, false},
@@ -180,8 +231,8 @@ var EndPoints = []ModbusEndPoint{
 	{"4", "Relay 4", Relay4Coil, Coil, 1, "", true, false},
 	{"5", "Relay 5", Relay5Coil, Coil, 1, "", true, false},
 	{"6", "Relay 6", Relay6Coil, Coil, 1, "", true, false},
-	{"7", "Relay 7", Relay7Coil, Coil, 1, "", true, false},
-	{"8", "Relay 8", Relay8Coil, Coil, 1, "", true, false},
+	{"7", "Left Water", Relay7Coil, Coil, 1, "", true, false},
+	{"8", "Right Water", Relay8Coil, Coil, 1, "", true, false},
 	{"9", "Momentary 1", Momentary1Coil, Coil, 1, "", true, false},
 	{"10", "Momentary 2", Momentary2Coil, Coil, 1, "", true, false},
 	{"11", "Momentary 3", Momentary3Coil, Coil, 1, "", true, false},
@@ -264,7 +315,7 @@ func (fuelgauge *FuelGauge) WebProcessHoldingRegistersForm(w http.ResponseWriter
 	for sKey, sValue := range r.Form {
 		nValue, _ := strconv.ParseFloat(sValue[0], 32)
 
-		for _, ep := range EndPoints {
+		for _, ep := range EndPointsLeft {
 			if (ep.id == sKey) && (ep.dataType == HoldingRegister) {
 				//				log.Println("Holding ", ep.id, " set to ", nValue)
 				err = fuelgauge.mbus.WriteHoldingRegister(ep.address, uint16(nValue), dataPointer.SlaveAddress)
@@ -291,6 +342,7 @@ func (fuelgauge *FuelGauge) getValues(lastValues *Data.Data, p *ModbusController
 		if err != nil {
 			log.Println("Error getting discrete inputs from slave ID ", slaveID, " - ", err)
 			lastValues.LastError = err.Error()
+			copy(newValues.Coil[:], lastValues.Coil)
 		} else {
 			copy(newValues.Discrete[:], mbData)
 		}
@@ -300,6 +352,7 @@ func (fuelgauge *FuelGauge) getValues(lastValues *Data.Data, p *ModbusController
 		if err != nil {
 			log.Println("Error getting coils from slave ID ", slaveID, " - ", err)
 			lastValues.LastError = err.Error()
+			copy(newValues.Discrete[:], lastValues.Discrete)
 		} else {
 			copy(newValues.Coil[:], mbData)
 		}
@@ -309,12 +362,22 @@ func (fuelgauge *FuelGauge) getValues(lastValues *Data.Data, p *ModbusController
 		if err != nil {
 			log.Println("Error getting holding registers from slave ID ", slaveID, " - ", err)
 			lastValues.LastError = err.Error()
+			copy(newValues.Holding[:], lastValues.Holding)
 		} else {
 			//			mbUintData := make([]uint16, len(mbUintData))
 			//			for i, v := range mbUintData {
 			//				mbUintData[i] = uint16(v)
 			//			}
 			copy(newValues.Holding[:], mbUintData)
+			if (newValues.Holding[5] < 100) && (lastValues.Holding[5] > 300) && (newValues.SlaveAddress == 5) {
+				newValues.Holding[5] = lastValues.Holding[5]
+				err := fuelgauge.mbus.WriteHoldingRegister(5, lastValues.Holding[5], lastValues.SlaveAddress)
+				if err != nil {
+					log.Println("Error correcting charge state", err)
+				} else {
+					log.Printf("Charge value corrected from %d to %d", mbUintData[5], newValues.Holding[5])
+				}
+			}
 		}
 	}
 	if len(newValues.Input) > 0 {
@@ -322,6 +385,7 @@ func (fuelgauge *FuelGauge) getValues(lastValues *Data.Data, p *ModbusController
 		if err != nil {
 			log.Println("Error getting input registers from slave ID ", slaveID, " - ", err)
 			lastValues.LastError = err.Error()
+			copy(newValues.Input[:], lastValues.Input)
 		} else {
 			copy(newValues.Input[:], mbUintData)
 		}
@@ -459,8 +523,14 @@ func (fuelgauge *FuelGauge) Run() {
 				fuelgauge.FgRight.ModbusData.LastError = ""
 				fuelgauge.getValues(fuelgauge.FgRight.ModbusData, fuelgauge.mbus)
 
+				// Fudge the current and charge because the sensor isn't working
+				fuelgauge.FgRight.ModbusData.Input[0] = 0
+				fuelgauge.FgRight.ModbusData.Input[7] = 0
+				fuelgauge.FgRight.ModbusData.Holding[5] = 1000
+
 				fuelgauge.CheckBatteryConnectionState()
-				fuelgauge.logValues(fuelgauge.FgLeft.ModbusData.Input[7], fuelgauge.FgRight.ModbusData.Input[7], float32(fuelgauge.FgLeft.ModbusData.Holding[5])/10, float32(fuelgauge.FgRight.ModbusData.Holding[5])/10)
+				//				fuelgauge.logValues(fuelgauge.FgLeft.ModbusData.Input[7], fuelgauge.FgRight.ModbusData.Input[7], float32(fuelgauge.FgLeft.ModbusData.Holding[5])/10, float32(fuelgauge.FgRight.ModbusData.Holding[5])/10)
+				fuelgauge.logValues(fuelgauge.FgLeft.ModbusData.Input[7], 100, float32(fuelgauge.FgLeft.ModbusData.Holding[5])/10, 0)
 			}
 		}
 	}
@@ -790,7 +860,7 @@ func (fuelgauge *FuelGauge) WebGetValues(w http.ResponseWriter, _ *http.Request)
 				data.fuelgauge.right.ModbusData.holding.forEach(function (e, i) {setHoldingReg(e, i, 1);});
 				data.fuelgauge.left.ModbusData.input.forEach(function (e, i) {setInputReg(e, i, 5);});
 				data.fuelgauge.right.ModbusData.input.forEach(function (e, i) {setInputReg(e, i, 1);});
-				if(data.lasterror != "") {
+				if(data.lasterror !== undefined) {
 					document.getElementById("error" + slave).innerText = data.lasterror;
 				}
 			}
@@ -910,7 +980,7 @@ func (fuelgauge *FuelGauge) WebGetValues(w http.ResponseWriter, _ *http.Request)
       <form onsubmit="return false;" id="modbus1Form">
 		<input type="hidden" name="slave" value="`, fuelgauge.FgLeft.SlaveAddress, `">
         <table class="pumps"><tr><td colspan=2 style="text-align:center">---Key---</td><td class="coilOn">===ON===</td><td class="coilOff">===OFF===</td></tr>`)
-	fuelgauge.drawTable(w, fuelgauge.FgLeft.SlaveAddress, EndPoints)
+	fuelgauge.drawTable(w, fuelgauge.FgLeft.SlaveAddress, EndPointsLeft)
 	if err != nil {
 		log.Println(err)
 		return
@@ -930,7 +1000,7 @@ func (fuelgauge *FuelGauge) WebGetValues(w http.ResponseWriter, _ *http.Request)
       <form onsubmit="return false;" id="modbus2Form">
 		<input type="hidden" name="slave" value="`, fuelgauge.FgRight.SlaveAddress, `">
         <table class="pumps"><tr><td colspan=2 style="text-align:center">---Key---</td><td class="coilOn">===ON===</td><td class="coilOff">===OFF===</td></tr>`)
-		fuelgauge.drawTable(w, fuelgauge.FgRight.SlaveAddress, EndPoints)
+		fuelgauge.drawTable(w, fuelgauge.FgRight.SlaveAddress, EndPointsRight)
 		if err != nil {
 			log.Println(err)
 			return
@@ -1026,6 +1096,29 @@ func (fuelgauge *FuelGauge) TurnOffFan() {
 		if err != nil {
 			log.Println("Failed to turn the battery fan off", err)
 		}
+	}
+}
+
+/**
+Turn on or off the generator.
+Send PATCH to URL: /generator/{action}
+*/
+func (fuelgauge *FuelGauge) WebGeneratorStartStop(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	var OnOff bool
+
+	if strings.EqualFold(vars["action"], "start") {
+		OnOff = true
+	} else if strings.EqualFold(vars["action"], "stop") {
+		OnOff = false
+	} else {
+		http.Error(w, "Start or Stop expected", http.StatusBadRequest)
+		return
+	}
+	// Fan relay is on coil 8 of the left bank controller
+	err := fuelgauge.mbus.WriteCoil(GeneratorRelay, OnOff, fuelgauge.FgLeft.SlaveAddress)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
 
@@ -1245,5 +1338,6 @@ func (fuelgauge *FuelGauge) StateOfChargeRight() float32 {
 }
 
 func (fuelgauge *FuelGauge) Current() float32 {
-	return float32(int16(fuelgauge.FgLeft.ModbusData.Input[AvgCurrent-1])+int16(fuelgauge.FgRight.ModbusData.Input[AvgCurrent-1])) / 100.0
+	//	return float32(int16(fuelgauge.FgLeft.ModbusData.Input[AvgCurrent-1])+int16(fuelgauge.FgRight.ModbusData.Input[AvgCurrent-1])) / 100.0
+	return float32(int16(fuelgauge.FgLeft.ModbusData.Input[AvgCurrent-1])) / 100.0
 }

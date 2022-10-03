@@ -5,7 +5,7 @@
       <paths name="Battery">
         <serverdata>
           <mappings>
-            <mapping deploy="/home/pi/projects/go/src/BatteryMonitor6813V4" local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="/" local="$PROJECT_DIR$" web="/" />
           </mappings>
         </serverdata>
       </paths>

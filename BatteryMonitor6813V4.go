@@ -14,7 +14,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/gorilla/websocket"
 	"log"
-	"log/syslog"
 	"math"
 	"net/http"
 	"os"
@@ -27,6 +26,8 @@ import (
 	"sync"
 	"time"
 )
+
+import _ "github.com/go-sql-driver/mysql"
 
 const SPIBAUDRATE = physic.MegaHertz * 1
 const SPIBITSPERWORD = 8
@@ -203,7 +204,8 @@ Get the voltage and temperature measurements from the LTC6813 chain
 func performMeasurements() {
 	var err error
 	if nDevices == 0 {
-		nDevices, err = getLTC6813(6)
+		//		nDevices, err = getLTC6813(6)
+		nDevices, err = getLTC6813(3)
 		if err != nil {
 			if *verbose {
 				fmt.Print(err)
@@ -308,9 +310,6 @@ func startDataWebSocket(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println(err)
-		if *verbose {
-			fmt.Println("startDataWebSocket - ", err)
-		}
 		return
 	}
 	for {
@@ -322,6 +321,7 @@ func startDataWebSocket(w http.ResponseWriter, r *http.Request) {
 			log.Println("Failed to get the values websocket writer - ", err)
 			return
 		}
+
 		var sJSON = `{"battery":` + string(ltc.GetValuesAsJSON()) + `,"inverter":`
 		jInverter, err := json.Marshal(&iValues)
 		sJSON += string(jInverter)
@@ -451,6 +451,11 @@ func webBatteryFan(w http.ResponseWriter, r *http.Request) {
 	fuelgauge.WebBatteryFan(w, r)
 }
 
+func webGeneratorStartStop(w http.ResponseWriter, r *http.Request) {
+	setHeaders(w)
+	fuelgauge.WebGeneratorStartStop(w, r)
+}
+
 func webSwitchBattery(w http.ResponseWriter, r *http.Request) {
 	setHeaders(w)
 	fuelgauge.WebSwitchBattery(w, r)
@@ -549,6 +554,9 @@ func webGetStatus(w http.ResponseWriter, r *http.Request) {
 		SOC      float64 `json:"soc"`
 		SOCLeft  float64 `json:"soc_left"`
 		SOCRight float64 `json:"soc_right"`
+		VBatt    float64 `json:"vbat"`
+		VLeft    float64 `json:"v_left"`
+		VRight   float64 `json:"v_right"`
 	}
 	var currentVal current
 	setHeaders(w)
@@ -593,98 +601,20 @@ func webGetStatus(w http.ResponseWriter, r *http.Request) {
 		currentVal.SOCLeft = math.Round((currentVal.SOCLeft/float64(left))*1000) / 10
 		currentVal.SOCRight = math.Round((currentVal.SOCRight/float64(right))*1000) / 10
 
+		sSQL = `select avg(bank_0) / 10 as vLeft, avg(bank_1) / 10 as vRight from voltage where logged > date_add(now(), interval -` + strconv.FormatUint(seconds, 10) + ` second)`
+
+		row = pDB.QueryRow(sSQL)
+		err = row.Scan(&currentVal.VLeft, &currentVal.VRight)
+		if err != nil {
+			_, eFmt := fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
+			if eFmt != nil {
+				log.Println(eFmt)
+			}
+		}
+		currentVal.VLeft = math.Round(currentVal.VLeft*10) / 10
+		currentVal.VRight = math.Round(currentVal.VRight*10) / 10
+		currentVal.VBatt = math.Max(currentVal.VLeft, currentVal.VRight)
 		sJSON, err := json.Marshal(currentVal)
-		if err != nil {
-			returnWebError(w, err)
-			return
-		}
-		_, eFmt := fmt.Fprint(w, string(sJSON))
-		if eFmt != nil {
-			log.Println(eFmt)
-		}
-	}
-}
-
-func webGetCurrentData(w http.ResponseWriter, r *http.Request) {
-	type current struct {
-		Logged   float64 `json:"logged"`
-		Left     float64 `json:"left"`
-		Right    float64 `json:"right"`
-		SOCLeft  float64 `json:"soc_left"`
-		SOCRight float64 `json:"soc_right"`
-	}
-	var currentVal current
-	var currentData []current = nil
-
-	setHeaders(w)
-
-	sSQL := `select min(unix_timestamp(logged)) as logged,
-		avg(channel_0) as left_,
-		avg(channel_1) as right_,
-		avg(level_of_charge_0) as soc_left,
-		avg(level_of_charge_1) as soc_right
-		from current
-		where logged between '` + r.FormValue("start") + `' and '` + r.FormValue("end") + `'
-		group by unix_timestamp(logged) DIV 15`
-
-	rows, err := pDB.Query(sSQL)
-	if err != nil {
-		_, eFmt := fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
-		if eFmt != nil {
-			log.Println(eFmt)
-		}
-	} else {
-		for rows.Next() {
-			err = rows.Scan(&currentVal.Logged, &currentVal.Left, &currentVal.Right, &currentVal.SOCLeft, &currentVal.SOCRight)
-			if err != nil {
-				returnWebError(w, err)
-				return
-			}
-			currentData = append(currentData, currentVal)
-		}
-		sJSON, err := json.Marshal(currentData)
-		if err != nil {
-			returnWebError(w, err)
-			return
-		}
-		_, eFmt := fmt.Fprint(w, string(sJSON))
-		if eFmt != nil {
-			log.Println(eFmt)
-		}
-	}
-}
-
-func webGetVoltageData(w http.ResponseWriter, r *http.Request) {
-	type voltage struct {
-		Logged float64 `json:"logged"`
-		Left   float64 `json:"left"`
-		Right  float64 `json:"right"`
-	}
-	var voltageVal voltage
-	var voltageData []voltage = nil
-
-	setHeaders(w)
-
-	sSQL := `select min(unix_timestamp(logged)) as logged, avg(bank_0) / 10 as left_, avg(bank_1) / 10 as right_
-  from voltage
- where logged between '` + r.FormValue("start") + `' and '` + r.FormValue("end") + `'
-		group by unix_timestamp(logged) DIV 15`
-	rows, err := pDB.Query(sSQL)
-	if err != nil {
-		_, eFmt := fmt.Fprint(w, `{"error":"`, err.Error(), `","sql":"`, sSQL, `"}`)
-		if eFmt != nil {
-			log.Println(eFmt)
-		}
-	} else {
-		for rows.Next() {
-			err = rows.Scan(&voltageVal.Logged, &voltageVal.Left, &voltageVal.Right)
-			if err != nil {
-				returnWebError(w, err)
-				return
-			}
-			voltageData = append(voltageData, voltageVal)
-		}
-		sJSON, err := json.Marshal(voltageData)
 		if err != nil {
 			returnWebError(w, err)
 			return
@@ -794,6 +724,7 @@ func SendSMAHeartBeat() {
 	}
 	for {
 		<-heartbeat.C
+		//		log.Print("SMA Heartbeat")
 		msg351 := SMACanMessages.NewCan351(setpoints.VSetpoint, setpoints.ISetpoint, setpoints.IDischarge, setpoints.VDischarge)
 		//		log.Println("CAN-351 : ", msg351.Frame())
 		err := bus.Publish(msg351.Frame())
@@ -851,24 +782,19 @@ func SendSMAHeartBeat() {
 }
 
 func mainImpl() error {
-	//	if !*verbose {
-	//		log.SetOutput(ioutil.Discard)
-	//	}
-	log.SetFlags(log.Lmicroseconds)
 	if flag.NArg() != 0 {
 		return errors.New("unexpected argument, try -help")
 	}
 
 	for {
-		nDevices, err := getLTC6813(6)
+		nDevices, err := getLTC6813(3)
 		if err == nil && nDevices > 0 {
 			break
 		}
-		fmt.Println("Looking for a device")
+		log.Println("Looking for a device")
 		time.Sleep(3 * time.Second)
 	}
 	log.Println("Starting up")
-	fmt.Println("Startup.")
 	ticker := time.NewTicker(time.Second)
 	//	dataReady := make(chan bool)
 
@@ -933,18 +859,22 @@ func mainImpl() error {
 			} else {
 				log.Println("No full charge evaluator!")
 			}
+
+			//////////////////////////////////////////////////////////////////////////////////////
+			// Commented out while bank 1 doesn't work
+
 			// Test each bank for full charge
 			// If bank 0 is full and bank 1 is not, turn on bank 1
 			// Don't switch back unless bank 0 drops below 95%
-			if fuelgauge.TestFullCharge(0) && !fuelgauge.TestFullCharge(1) {
-				fuelgauge.SwitchOffBank(0)
-			} else if (fuelgauge.StateOfChargeLeft() < 95.0) || fuelgauge.TestFullCharge(1) {
-				fuelgauge.SwitchOffBank(1)
-			}
-			if fuelgauge.TestFullCharge(0) && fuelgauge.TestFullCharge(1) {
+			//if fuelgauge.TestFullCharge(0) && !fuelgauge.TestFullCharge(1) {
+			//	fuelgauge.SwitchOffBank(0)
+			//} else if (fuelgauge.StateOfChargeLeft() < 95.0) || fuelgauge.TestFullCharge(1) {
+			//	fuelgauge.SwitchOffBank(1)
+			//}
+			if fuelgauge.TestFullCharge(0) { // && fuelgauge.TestFullCharge(1) {
 				setpoints.VTargetSetpoint = setpoints.VChargedSetpoint
 				setpoints.ITargetSetpoint = setpoints.IChargedSetpoint
-			} else if fuelgauge.StateOfChargeLeft() < 98 || fuelgauge.StateOfChargeRight() < 98 {
+			} else if fuelgauge.StateOfChargeLeft() < 98 { //} || fuelgauge.StateOfChargeRight() < 98 {
 				setpoints.VTargetSetpoint = setpoints.VChargingSetpoint
 				setpoints.ITargetSetpoint = setpoints.IChargingSetpoint
 			}
@@ -1008,7 +938,7 @@ func mainImpl() error {
 	go SendSMAHeartBeat()
 
 	// Configure and start the WEB server
-	fmt.Println("Starting the WEB server")
+	log.Println("Starting the WEB server")
 	router := mux.NewRouter().StrictSlash(true)
 	router.PathPrefix("/").Methods("OPTIONS").HandlerFunc(webOptionsHandler)
 	router.HandleFunc("/values", getValues).Methods("GET")
@@ -1037,6 +967,7 @@ func mainImpl() error {
 	router.HandleFunc("/status/{avg}", webGetStatus).Methods("GET")
 	router.HandleFunc("/bankOff/{bank}", webSwitchOffBank).Methods("GET")
 	router.HandleFunc("/chargingParameters", webGetChargingParameters).Methods("GET")
+	router.HandleFunc("/generator/{action}", webGeneratorStartStop).Methods("PATCH")
 	spa := spaHandler{staticPath: "/var/www/html", indexPath: "index.html"}
 	router.PathPrefix("/").Handler(spa)
 
@@ -1061,7 +992,9 @@ func connectToDatabase() (*sql.DB, error) {
 		_ = pDB.Close()
 		pDB = nil
 	}
-	var sConnectionString = *pDatabaseLogin + ":" + *pDatabasePassword + "@tcp(" + *pDatabaseServer + ":" + *pDatabasePort + ")/" + *pDatabaseName + "?loc=Local"
+	// Connection string needs the additional parameter of parseTime=true in order to read dat/time values into sql.NullTime variables
+	// var sConnectionString = *pDatabaseLogin + ":" + *pDatabasePassword + "@tcp(" + *pDatabaseServer + ":" + *pDatabasePort + ")/" + *pDatabaseName + "?loc=Local&parseTime=true"
+	var sConnectionString = *pDatabaseLogin + ":" + *pDatabasePassword + "@tcp(" + *pDatabaseServer + ":" + *pDatabasePort + ")/" + *pDatabaseName + "?parseTime=true"
 
 	//	fmt.Println("Connecting to [", sConnectionString, "]")
 	db, err := sql.Open("mysql", sConnectionString)
@@ -1131,12 +1064,14 @@ func init() {
 	setpoints.IChargingSetpoint = 1200.0
 	setpoints.IChargedSetpoint = 35.0
 
-	logwriter, e := syslog.New(syslog.LOG_NOTICE, "BatteryMonitor")
-	if e == nil {
-		log.SetOutput(logwriter)
-	} else {
-		fmt.Println(e)
-	}
+	log.SetFlags(log.Lshortfile | log.LstdFlags)
+
+	//logwriter, e := syslog.New(syslog.LOG_NOTICE, "BatteryMonitor")
+	//if e == nil {
+	//	log.SetOutput(logwriter)
+	//} else {
+	//	fmt.Println(e)
+	//}
 	verbose = flag.Bool("v", false, "verbose mode")
 	spiDevice = flag.String("c", "/dev/spidev0.1", "SPI device from /dev")
 	pDatabaseLogin = flag.String("l", "logger", "Database Login ID")
@@ -1191,7 +1126,7 @@ func getVersion(w http.ResponseWriter, _ *http.Request) {
   </head>
   <body>
     <h1>Cedar Technology Battery Manager</h1>
-    <h2>Version 1.0 - March 27th 2020</h2>
+    <h2>Version 1.1 - July 4th 2022</h2>
   </body>
 </html>`)
 	if err != nil {
@@ -1383,14 +1318,13 @@ func main() {
 
 	signal = sync.NewCond(&sync.Mutex{})
 
-	if err := mainImpl(); err != nil {
-		_, eFmt := fmt.Fprintf(os.Stderr, "BatteryMonitor6813V4 Error: %s.\n", err)
-		if eFmt != nil {
-			log.Println(eFmt)
+	for {
+		if err := mainImpl(); err != nil {
+			log.Print("BatteryMonitor6813V4 Error: %s.\n", err)
 		}
-		os.Exit(1)
+		log.Print("Main loop exited for some reason but no error was reported.")
 	}
-	fmt.Println("Program has ended.")
+	//	fmt.Println("Program has ended.")
 }
 
 const homeHTML = `<!DOCTYPE html>

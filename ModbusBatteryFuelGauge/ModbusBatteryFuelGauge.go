@@ -860,7 +860,7 @@ func connectToDatabase() (*sql.DB, error) {
 		}
 		return nil, err
 	}
-	rows, err := db.Query("select logged, level_of_charge_0, level_of_charge_1 from current order by logged desc limit 1")
+	rows, err := db.Query("select logged, round(level_of_charge_0), round(level_of_charge_1) from current order by logged desc limit 1")
 	if err != nil {
 		if err := db.Close(); err != nil {
 			log.Println(err)
